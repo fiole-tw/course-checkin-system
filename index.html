@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ABBY 新中式燙髮課程｜報到系統</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; background: #f0f0f0; color: #222; min-height: 100vh; }
+
+  header { background: #1a1a1a; color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 15px; font-weight: 700; }
+  #clock { font-size: 13px; color: #aaa; }
+
+  .tabs { display: flex; background: #111; padding: 0 16px; }
+  .tab { padding: 12px 20px; color: #888; cursor: pointer; font-size: 14px; border-bottom: 3px solid transparent; white-space: nowrap; touch-action: manipulation; }
+  .tab.active { color: #fff; border-bottom-color: #fff; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── TAB 0 ── */
+  .checkin-wrap { padding: 20px 16px; max-width: 480px; margin: 0 auto; }
+
+  .strip { display: flex; background: #1a1a1a; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+  .strip-item { flex: 1; text-align: center; padding: 14px 6px; border-right: 1px solid #333; }
+  .strip-item:last-child { border-right: none; }
+  .strip-item .num { font-size: 28px; font-weight: 900; color: #fff; }
+  .strip-item .lbl { font-size: 11px; color: #888; margin-top: 2px; }
+
+  .result-box {
+    border-radius: 12px; padding: 18px; text-align: center;
+    border: 2px solid #e0e0e0; margin-bottom: 16px;
+    min-height: 90px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+    background: #fff;
+  }
+  .result-box.found      { border-color: #4caf50; background: #f1fff2; }
+  .result-box.not-mapped { border-color: #ff9800; background: #fffbf0; }
+  .result-box.duplicate  { border-color: #f44336; background: #fff5f5; }
+  .result-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .badge-ok   { background: #4caf50; color: #fff; }
+  .badge-warn { background: #ff9800; color: #fff; }
+  .badge-err  { background: #f44336; color: #fff; }
+  .result-ticket { font-size: 36px; font-weight: 900; font-family: monospace; letter-spacing: 6px; }
+  .result-salon  { font-size: 18px; font-weight: 700; }
+  .result-meta   { font-size: 12px; color: #888; }
+
+  .input-card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.08); margin-bottom: 16px; }
+  .input-label { font-size: 13px; color: #888; font-weight: 600; margin-bottom: 10px; }
+
+  #ticket-input {
+    width: 100%; font-size: 52px; font-family: monospace; font-weight: 900;
+    text-align: center; letter-spacing: 8px;
+    border: 2px solid #e0e0e0; border-radius: 10px;
+    padding: 16px 8px; outline: none; color: #1a1a1a; background: #f9f9f9;
+    -webkit-appearance: none;
+  }
+  #ticket-input:focus { border-color: #1a1a1a; background: #fff; }
+
+  .btn-checkin {
+    width: 100%; margin-top: 14px; padding: 18px;
+    background: #1a1a1a; color: #fff; border: none; border-radius: 12px;
+    font-size: 20px; font-weight: 900; cursor: pointer; font-family: inherit;
+    letter-spacing: 2px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .btn-checkin:active { background: #444; transform: scale(0.98); }
+
+  .recent-card { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .recent-card h3 { font-size: 13px; color: #888; font-weight: 600; margin-bottom: 10px; }
+  .recent-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; gap: 10px; }
+  .recent-row:last-child { border-bottom: none; }
+  .recent-ticket { font-family: monospace; font-weight: 900; font-size: 17px; min-width: 50px; }
+  .recent-salon  { flex: 1; font-size: 13px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recent-time   { font-size: 11px; color: #bbb; white-space: nowrap; }
+
+  /* ── TAB 1 & 2 ── */
+  .pad { padding: 16px; max-width: 600px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+  label { display: block; font-size: 12px; color: #666; font-weight: 600; margin-bottom: 4px; margin-top: 10px; }
+  input[type="text"], input[type="number"] {
+    padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px;
+    font-size: 15px; font-family: inherit; outline: none; width: 100%;
+  }
+  input:focus { border-color: #1a1a1a; }
+  .btn { padding: 10px 18px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; touch-action: manipulation; }
+  .btn-dark    { background: #1a1a1a; color: #fff; }
+  .btn-outline { background: #fff; color: #333; border: 1.5px solid #ddd; }
+  .btn-danger  { background: #fff; color: #d00; border: 1.5px solid #fcc; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+  .range-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+  .range-form > div { flex: 1; min-width: 80px; }
+  .range-form > div.wide { flex: 2; min-width: 160px; }
+  .range-entry { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f9f9f9; border-radius: 8px; margin-bottom: 6px; font-size: 13px; flex-wrap: wrap; }
+  .range-nums  { font-family: monospace; font-weight: 700; min-width: 90px; }
+  .range-salon { flex: 1; font-weight: 600; }
+  .range-rep   { color: #888; font-size: 12px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+  .stat-chip { background: #f5f5f5; border-radius: 8px; padding: 12px; text-align: center; }
+  .stat-chip .sname { font-size: 12px; color: #555; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat-chip .snum  { font-size: 28px; font-weight: 900; }
+  .stat-chip .sunit { font-size: 11px; color: #888; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f5f5f5; padding: 8px 10px; text-align: left; font-size: 12px; color: #666; }
+  td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: #1a1a1a; color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 14px; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 9999; white-space: nowrap; max-width: 90vw; text-align: center; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ABBY 新中式燙髮課程｜報到系統</h1>
+  <div id="clock"></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">✅ 報到</div>
+  <div class="tab" onclick="switchTab(1)">⚙ 號碼段</div>
+  <div class="tab" onclick="switchTab(2)">📊 統計</div>
+</div>
+
+<!-- TAB 0 -->
+<div class="tab-content active" id="tab-0">
+<div class="checkin-wrap">
+
+  <div class="strip">
+    <div class="strip-item"><div class="num" id="s-total">0</div><div class="lbl">到場人次</div></div>
+    <div class="strip-item"><div class="num" id="s-salons">0</div><div class="lbl">沙龍數</div></div>
+    <div class="strip-item"><div class="num" id="s-left">500</div><div class="lbl">未到場</div></div>
+  </div>
+
+  <div id="result-box" class="result-box">
+    <div style="color:#ccc;font-size:13px;">輸入序號後按報到</div>
+  </div>
+
+  <div class="input-card">
+    <div class="input-label">票券序號</div>
+    <input id="ticket-input" type="text" inputmode="numeric" placeholder="001"
+      maxlength="6" autocomplete="off" autocorrect="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();doCheckin();}">
+    <button class="btn-checkin" onclick="doCheckin()">報到 ✔</button>
+  </div>
+
+  <div class="recent-card">
+    <h3>最近報到</h3>
+    <div id="recent-list"><div style="color:#ccc;text-align:center;padding:12px;font-size:13px;">尚無記錄</div></div>
+  </div>
+
+</div>
+</div>
+
+<!-- TAB 1 -->
+<div class="tab-content" id="tab-1">
+<div class="pad">
+  <div class="card">
+    <h2>新增號碼段</h2>
+    <div class="range-form">
+      <div><label>起始號</label><input type="number" id="r-from" placeholder="001" min="1" max="999" inputmode="numeric"></div>
+      <div><label>結束號</label><input type="number" id="r-to" placeholder="050" min="1" max="999" inputmode="numeric"></div>
+      <div class="wide"><label>沙龍名稱</label><input type="text" id="r-salon" placeholder="例：HAIR LAB 中山店"></div>
+      <div class="wide"><label>業務姓名（選填）</label><input type="text" id="r-rep" placeholder="業務名稱"></div>
+      <div style="align-self:flex-end"><button class="btn btn-dark" onclick="addRange()" style="width:100%;">新增</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h2 style="margin:0;">已設定號碼段</h2>
+      <button class="btn btn-danger btn-sm" onclick="clearRanges()">清除全部</button>
+    </div>
+    <div id="range-list"><div style="color:#aaa;text-align:center;padding:20px;font-size:13px;">尚未設定任何號碼段</div></div>
+  </div>
+
+  <div class="card" style="background:#fffbf0;border:1.5px solid #ffe08a;">
+    <p style="font-size:13px;color:#666;line-height:1.8;">
+      💡 設定後即生效，輸入序號時自動對應沙龍。號碼段可重疊，範圍越小優先度越高。若號碼不在任何範圍內，顯示「未知沙龍」並仍記錄入場。
+    </p>
+  </div>
+</div>
+</div>
+
+<!-- TAB 2 -->
+<div class="tab-content" id="tab-2">
+<div class="pad">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h2 style="margin:0;">各沙龍到場人次</h2>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ CSV</button>
+        <button class="btn btn-danger btn-sm" onclick="clearCheckins()">清除</button>
+      </div>
+    </div>
+    <div class="stat-grid" id="stat-grid">
+      <div style="color:#aaa;text-align:center;padding:20px;font-size:13px;grid-column:1/-1;">尚無報到記錄</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>詳細流水帳</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>#</th><th>時間</th><th>序號</th><th>沙龍</th><th>業務</th><th></th></tr></thead>
+        <tbody id="log-body">
+          <tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px;">尚無記錄</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let ranges   = [];
+let checkins = [];
+const TOTAL  = 500;
+try { ranges   = JSON.parse(localStorage.getItem('ranges')   || '[]'); } catch(e){}
+try { checkins = JSON.parse(localStorage.getItem('checkins') || '[]'); } catch(e){}
+
+setInterval(() => {
+  const el = document.getElementById('clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('zh-TW');
+}, 1000);
+
+renderAll();
+setTimeout(() => document.getElementById('ticket-input').focus(), 200);
+
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.tab-content').forEach((t,j) => t.classList.toggle('active', i===j));
+  if (i===0) setTimeout(() => document.getElementById('ticket-input').focus(), 100);
+  renderAll();
+}
+
+function doCheckin() {
+  const raw    = document.getElementById('ticket-input').value.trim().replace(/\D/g,'');
+  if (!raw) { showToast('請輸入票券序號'); return; }
+  const ticket = raw.padStart(3,'0');
+  const num    = parseInt(raw);
+
+  const dup = checkins.find(c => c.ticket === ticket);
+  if (dup) {
+    showResult('duplicate', ticket, dup.salon, dup.rep, `已於 ${dup.time} 報到`);
+    showToast(`⚠ ${ticket} 已報到過！`);
+    try { navigator.vibrate([80,50,80]); } catch(e){}
+    clearInput(); return;
+  }
+
+  const match = lookupTicket(num);
+  const salon = match ? match.salon : '未知沙龍';
+  const rep   = match ? (match.rep||'') : '';
+  const time  = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  checkins.push({ id: Date.now().toString(), ticket, salon, rep, time });
+  save('checkins', checkins);
+
+  showResult(match ? 'found' : 'not-mapped', ticket, salon, rep);
+  showToast(match ? `✔ ${ticket} — ${salon}` : `⚠ ${ticket} 無對應沙龍，已記錄`);
+  try { navigator.vibrate(80); } catch(e){}
+  renderAll();
+  clearInput();
+}
+
+function clearInput() {
+  const el = document.getElementById('ticket-input');
+  el.value = ''; el.focus();
+}
+
+function showResult(state, ticket, salon, rep, note='') {
+  const box = document.getElementById('result-box');
+  const badges = {
+    found:       '<span class="result-badge badge-ok">✔ 報到成功</span>',
+    'not-mapped':'<span class="result-badge badge-warn">⚠ 無對應沙龍</span>',
+    duplicate:   '<span class="result-badge badge-err">✕ 重複入場</span>',
+  };
+  box.className = 'result-box ' + state;
+  box.innerHTML = `
+    ${badges[state]||''}
+    <div class="result-ticket">${ticket}</div>
+    <div class="result-salon">${salon}</div>
+    ${rep  ? `<div class="result-meta">業務：${rep}</div>` : ''}
+    ${note ? `<div class="result-meta">${note}</div>` : ''}`;
+}
+
+function lookupTicket(n) {
+  const m = ranges.filter(r => n>=r.from && n<=r.to);
+  if (!m.length) return null;
+  return m.sort((a,b) => (a.to-a.from)-(b.to-b.from))[0];
+}
+
+function addRange() {
+  const from  = parseInt(document.getElementById('r-from').value);
+  const to    = parseInt(document.getElementById('r-to').value);
+  const salon = document.getElementById('r-salon').value.trim();
+  const rep   = document.getElementById('r-rep').value.trim();
+  if (!salon)                          { showToast('請輸入沙龍名稱'); return; }
+  if (isNaN(from)||isNaN(to)||from>to) { showToast('號碼範圍有誤'); return; }
+  ranges.push({ from, to, salon, rep });
+  save('ranges', ranges);
+  renderRangeList();
+  ['r-from','r-to','r-salon','r-rep'].forEach(id => document.getElementById(id).value='');
+  showToast(`已新增：${pad(from)}–${pad(to)} → ${salon}`);
+}
+
+function removeRange(i) {
+  if (!confirm('確定刪除？')) return;
+  ranges.splice(i,1); save('ranges',ranges); renderRangeList();
+}
+
+function clearRanges() {
+  if (!ranges.length||!confirm('確定清除所有號碼段？')) return;
+  ranges=[]; save('ranges',ranges); renderRangeList();
+}
+
+function deleteCheckin(id) {
+  checkins=checkins.filter(c=>c.id!==id);
+  save('checkins',checkins); renderAll();
+}
+
+function clearCheckins() {
+  if (!checkins.length||!confirm(`確定清除全部 ${checkins.length} 筆記錄？`)) return;
+  checkins=[]; save('checkins',checkins); renderAll(); showToast('已清除');
+}
+
+function renderAll() {
+  document.getElementById('s-total').textContent  = checkins.length;
+  document.getElementById('s-salons').textContent = new Set(checkins.map(c=>c.salon)).size;
+  document.getElementById('s-left').textContent   = Math.max(0, TOTAL-checkins.length);
+  renderRecent(); renderStats(); renderLog(); renderRangeList();
+}
+
+function renderRecent() {
+  const el = document.getElementById('recent-list');
+  const last = [...checkins].reverse().slice(0,6);
+  if (!last.length) { el.innerHTML='<div style="color:#ccc;text-align:center;padding:12px;font-size:13px;">尚無記錄</div>'; return; }
+  el.innerHTML = last.map(c =>
+    `<div class="recent-row">
+      <span class="recent-ticket">${c.ticket}</span>
+      <span class="recent-salon">${c.salon}</span>
+      <span class="recent-time">${c.time}</span>
+    </div>`).join('');
+}
+
+function renderStats() {
+  const grid = document.getElementById('stat-grid');
+  const totals = {};
+  checkins.forEach(c => { totals[c.salon]=(totals[c.salon]||0)+1; });
+  const entries = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+  if (!entries.length) {
+    grid.innerHTML='<div style="color:#aaa;text-align:center;padding:20px;font-size:13px;grid-column:1/-1;">尚無報到記錄</div>';
+    return;
+  }
+  grid.innerHTML = entries.map(([name,cnt])=>
+    `<div class="stat-chip"><div class="sname" title="${name}">${name}</div><div class="snum">${cnt}</div><div class="sunit">人次</div></div>`
+  ).join('');
+}
+
+function renderLog() {
+  const tbody = document.getElementById('log-body');
+  if (!checkins.length) {
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px;">尚無記錄</td></tr>';
+    return;
+  }
+  tbody.innerHTML = [...checkins].reverse().map((c,i)=>
+    `<tr>
+      <td style="color:#aaa">${checkins.length-i}</td>
+      <td style="color:#666;white-space:nowrap">${c.time}</td>
+      <td style="font-family:monospace;font-weight:700">${c.ticket}</td>
+      <td><strong>${c.salon}</strong></td>
+      <td style="color:#888">${c.rep||'—'}</td>
+      <td><button onclick="deleteCheckin('${c.id}')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;">✕</button></td>
+    </tr>`).join('');
+}
+
+function renderRangeList() {
+  const el = document.getElementById('range-list');
+  if (!ranges.length) {
+    el.innerHTML='<div style="color:#aaa;text-align:center;padding:20px;font-size:13px;">尚未設定任何號碼段</div>';
+    return;
+  }
+  el.innerHTML = ranges.map((r,i)=>
+    `<div class="range-entry">
+      <span class="range-nums">${pad(r.from)}–${pad(r.to)}</span>
+      <span class="range-salon">${r.salon}</span>
+      <span class="range-rep">${r.rep||''}</span>
+      <button class="btn btn-danger btn-sm" onclick="removeRange(${i})">刪除</button>
+    </div>`).join('');
+}
+
+function exportCSV() {
+  if (!checkins.length) { showToast('尚無記錄可匯出'); return; }
+  const totals={};
+  checkins.forEach(c=>{totals[c.salon]=(totals[c.salon]||0)+1;});
+  let csv='﻿=== 各沙龍到場人次 ===\r\n沙龍名稱,到場人次\r\n';
+  Object.entries(totals).sort((a,b)=>b[1]-a[1]).forEach(([n,c])=>{csv+=`"${n}",${c}\r\n`;});
+  csv+=`合計,${checkins.length}\r\n\r\n=== 詳細報到記錄 ===\r\n序號,時間,票券序號,沙龍名稱,業務姓名\r\n`;
+  checkins.forEach((c,i)=>{csv+=`${i+1},"${c.time}","${c.ticket}","${c.salon}","${c.rep||''}"\r\n`;});
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`報到記錄_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'')}.csv`;
+  a.click(); URL.revokeObjectURL(url); showToast('CSV 已下載');
+}
+
+function pad(n) { return String(n).padStart(3,'0'); }
+function save(k,v) { try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>

@@ -1,425 +1,235 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ABBY 新中式燙髮課程｜報到系統</title>
+<title>VOKA 即刻燙 LIVE  SEMINAR｜報到系統</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; background: #f0f0f0; color: #222; min-height: 100vh; }
-
-  header { background: #1a1a1a; color: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
-  header h1 { font-size: 15px; font-weight: 700; }
-  #clock { font-size: 13px; color: #aaa; }
-
-  .tabs { display: flex; background: #111; padding: 0 16px; }
-  .tab { padding: 12px 20px; color: #888; cursor: pointer; font-size: 14px; border-bottom: 3px solid transparent; white-space: nowrap; touch-action: manipulation; }
-  .tab.active { color: #fff; border-bottom-color: #fff; }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  /* ── TAB 0 ── */
-  .checkin-wrap { padding: 20px 16px; max-width: 480px; margin: 0 auto; }
-
-  .strip { display: flex; background: #1a1a1a; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-  .strip-item { flex: 1; text-align: center; padding: 14px 6px; border-right: 1px solid #333; }
-  .strip-item:last-child { border-right: none; }
-  .strip-item .num { font-size: 28px; font-weight: 900; color: #fff; }
-  .strip-item .lbl { font-size: 11px; color: #888; margin-top: 2px; }
-
-  .result-box {
-    border-radius: 12px; padding: 18px; text-align: center;
-    border: 2px solid #e0e0e0; margin-bottom: 16px;
-    min-height: 90px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 6px;
-    background: #fff;
-  }
-  .result-box.found      { border-color: #4caf50; background: #f1fff2; }
-  .result-box.not-mapped { border-color: #ff9800; background: #fffbf0; }
-  .result-box.duplicate  { border-color: #f44336; background: #fff5f5; }
-  .result-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-  .badge-ok   { background: #4caf50; color: #fff; }
-  .badge-warn { background: #ff9800; color: #fff; }
-  .badge-err  { background: #f44336; color: #fff; }
-  .result-ticket { font-size: 36px; font-weight: 900; font-family: monospace; letter-spacing: 6px; }
-  .result-salon  { font-size: 18px; font-weight: 700; }
-  .result-meta   { font-size: 12px; color: #888; }
-
-  .input-card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.08); margin-bottom: 16px; }
-  .input-label { font-size: 13px; color: #888; font-weight: 600; margin-bottom: 10px; }
-
-  #ticket-input {
-    width: 100%; font-size: 52px; font-family: monospace; font-weight: 900;
-    text-align: center; letter-spacing: 8px;
-    border: 2px solid #e0e0e0; border-radius: 10px;
-    padding: 16px 8px; outline: none; color: #1a1a1a; background: #f9f9f9;
-    -webkit-appearance: none;
-  }
-  #ticket-input:focus { border-color: #1a1a1a; background: #fff; }
-
-  .btn-checkin {
-    width: 100%; margin-top: 14px; padding: 18px;
-    background: #1a1a1a; color: #fff; border: none; border-radius: 12px;
-    font-size: 20px; font-weight: 900; cursor: pointer; font-family: inherit;
-    letter-spacing: 2px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  }
-  .btn-checkin:active { background: #444; transform: scale(0.98); }
-
-  .recent-card { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-  .recent-card h3 { font-size: 13px; color: #888; font-weight: 600; margin-bottom: 10px; }
-  .recent-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; gap: 10px; }
-  .recent-row:last-child { border-bottom: none; }
-  .recent-ticket { font-family: monospace; font-weight: 900; font-size: 17px; min-width: 50px; }
-  .recent-salon  { flex: 1; font-size: 13px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .recent-time   { font-size: 11px; color: #bbb; white-space: nowrap; }
-
-  /* ── TAB 1 & 2 ── */
-  .pad { padding: 16px; max-width: 600px; margin: 0 auto; }
-  .card { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
-  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
-  label { display: block; font-size: 12px; color: #666; font-weight: 600; margin-bottom: 4px; margin-top: 10px; }
-  input[type="text"], input[type="number"] {
-    padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px;
-    font-size: 15px; font-family: inherit; outline: none; width: 100%;
-  }
-  input:focus { border-color: #1a1a1a; }
-  .btn { padding: 10px 18px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; touch-action: manipulation; }
-  .btn-dark    { background: #1a1a1a; color: #fff; }
-  .btn-outline { background: #fff; color: #333; border: 1.5px solid #ddd; }
-  .btn-danger  { background: #fff; color: #d00; border: 1.5px solid #fcc; }
-  .btn-sm { padding: 6px 14px; font-size: 12px; }
-
-  .range-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
-  .range-form > div { flex: 1; min-width: 80px; }
-  .range-form > div.wide { flex: 2; min-width: 160px; }
-  .range-entry { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f9f9f9; border-radius: 8px; margin-bottom: 6px; font-size: 13px; flex-wrap: wrap; }
-  .range-nums  { font-family: monospace; font-weight: 700; min-width: 90px; }
-  .range-salon { flex: 1; font-weight: 600; }
-  .range-rep   { color: #888; font-size: 12px; }
-
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-  .stat-chip { background: #f5f5f5; border-radius: 8px; padding: 12px; text-align: center; }
-  .stat-chip .sname { font-size: 12px; color: #555; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .stat-chip .snum  { font-size: 28px; font-weight: 900; }
-  .stat-chip .sunit { font-size: 11px; color: #888; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #f5f5f5; padding: 8px 10px; text-align: left; font-size: 12px; color: #666; }
-  td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; }
-  tr:last-child td { border-bottom: none; }
-
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px); background: #1a1a1a; color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 14px; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 9999; white-space: nowrap; max-width: 90vw; text-align: center; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;background:#f4f5f7;color:#1c1c1e;padding-bottom:40px}
+  header{background:#1c1c1e;color:#fff;padding:16px 14px;text-align:center;position:sticky;top:0;z-index:10}
+  header h1{margin:0;font-size:17px;font-weight:600;letter-spacing:.5px}
+  .region-bar{background:#2c2c2e;padding:10px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:52px;z-index:9}
+  .region-bar label{color:#aeaeb2;font-size:13px;white-space:nowrap}
+  .region-bar select{flex:1;font-size:16px;padding:9px 10px;border-radius:10px;border:none;background:#fff;font-weight:600;color:#1c1c1e}
+  .wrap{max-width:520px;margin:0 auto;padding:14px}
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tabs button{flex:1;padding:10px;border:none;border-radius:10px;background:#e5e5ea;color:#3a3a3c;font-size:15px;font-weight:600}
+  .tabs button.on{background:#1c1c1e;color:#fff}
+  .card{background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .stats{display:flex;gap:10px;margin-bottom:6px}
+  .stat{flex:1;background:#fff;border-radius:14px;padding:14px 8px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .stat .n{font-size:26px;font-weight:700}
+  .stat .l{font-size:12px;color:#8e8e93;margin-top:3px}
+  .stat.done .n{color:#34c759}.stat.miss .n{color:#ff9500}
+  .substat{text-align:center;font-size:12px;color:#8e8e93;margin-bottom:14px}
+  .substat b{color:#5856d6}
+  label.fld{display:block;font-size:13px;color:#8e8e93;margin-bottom:6px}
+  #serial{width:100%;font-size:34px;text-align:center;padding:16px;border:2px solid #d1d1d6;border-radius:12px;font-weight:700;letter-spacing:3px}
+  #serial:focus{outline:none;border-color:#1c1c1e}
+  .minput{width:100%;font-size:16px;padding:11px;border:1px solid #d1d1d6;border-radius:10px;margin-bottom:10px}
+  .minput:focus{outline:none;border-color:#5856d6}
+  .btn{width:100%;margin-top:6px;padding:16px;font-size:18px;font-weight:700;color:#fff;background:#34c759;border:none;border-radius:12px}
+  .btn.add{background:#5856d6;font-size:16px;padding:14px}
+  .btn:active{opacity:.85}
+  #result{margin-top:14px;min-height:20px;text-align:center;font-size:15px}
+  #mresult{margin-top:4px;min-height:16px;text-align:center;font-size:14px}
+  .ok{color:#1c7c33}.warn{color:#c77700}.err{color:#c0392b}
+  .r-store{font-size:22px;font-weight:700;margin:2px 0}
+  .r-biz{font-size:14px;color:#636366}
+  h3{font-size:14px;color:#8e8e93;margin:4px 0 10px;font-weight:600}
+  .collap-h{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .collap-h .arw{color:#c7c7cc;font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 6px;text-align:left;border-bottom:1px solid #f0f0f2}
+  th{color:#8e8e93;font-weight:600}
+  .muted{color:#aeaeb2;text-align:center;padding:16px 0}
+  .row-btn{display:flex;gap:8px;margin-bottom:12px}
+  .row-btn button{flex:1;padding:9px;border:1px solid #d1d1d6;background:#fff;border-radius:9px;font-size:13px;font-weight:600;color:#3a3a3c}
+  .hidden{display:none}
+  .undo{color:#007aff;font-size:12px;margin-left:6px}
+  .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;background:#eae9ff;color:#5856d6;margin-left:4px;vertical-align:middle}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>ABBY 新中式燙髮課程｜報到系統</h1>
-  <div id="clock"></div>
-</header>
-
-<div class="tabs">
-  <div class="tab active" onclick="switchTab(0)">✅ 報到</div>
-  <div class="tab" onclick="switchTab(1)">⚙ 號碼段</div>
-  <div class="tab" onclick="switchTab(2)">📊 統計</div>
+<header><h1>VOKA 即刻燙 LIVE  SEMINAR｜報到系統</h1></header>
+<div class="region-bar">
+  <label>場次</label>
+  <select id="region"></select>
 </div>
-
-<!-- TAB 0 -->
-<div class="tab-content active" id="tab-0">
-<div class="checkin-wrap">
-
-  <div class="strip">
-    <div class="strip-item"><div class="num" id="s-total">0</div><div class="lbl">到場人次</div></div>
-    <div class="strip-item"><div class="num" id="s-salons">0</div><div class="lbl">沙龍數</div></div>
-    <div class="strip-item"><div class="num" id="s-left">500</div><div class="lbl">未到場</div></div>
+<div class="wrap">
+  <div class="tabs">
+    <button id="tabCheck" class="on" onclick="showTab('check')">✅ 報到</button>
+    <button id="tabStat" onclick="showTab('stat')">📊 統計</button>
   </div>
 
-  <div id="result-box" class="result-box">
-    <div style="color:#ccc;font-size:13px;">輸入序號後按報到</div>
-  </div>
-
-  <div class="input-card">
-    <div class="input-label">票券序號</div>
-    <input id="ticket-input" type="text" inputmode="numeric" placeholder="001"
-      maxlength="6" autocomplete="off" autocorrect="off" spellcheck="false"
-      onkeydown="if(event.key==='Enter'){event.preventDefault();doCheckin();}">
-    <button class="btn-checkin" onclick="doCheckin()">報到 ✔</button>
-  </div>
-
-  <div class="recent-card">
-    <h3>最近報到</h3>
-    <div id="recent-list"><div style="color:#ccc;text-align:center;padding:12px;font-size:13px;">尚無記錄</div></div>
-  </div>
-
-</div>
-</div>
-
-<!-- TAB 1 -->
-<div class="tab-content" id="tab-1">
-<div class="pad">
-  <div class="card">
-    <h2>新增號碼段</h2>
-    <div class="range-form">
-      <div><label>起始號</label><input type="number" id="r-from" placeholder="001" min="1" max="999" inputmode="numeric"></div>
-      <div><label>結束號</label><input type="number" id="r-to" placeholder="050" min="1" max="999" inputmode="numeric"></div>
-      <div class="wide"><label>沙龍名稱</label><input type="text" id="r-salon" placeholder="例：HAIR LAB 中山店"></div>
-      <div class="wide"><label>業務姓名（選填）</label><input type="text" id="r-rep" placeholder="業務名稱"></div>
-      <div style="align-self:flex-end"><button class="btn btn-dark" onclick="addRange()" style="width:100%;">新增</button></div>
+  <div id="viewCheck">
+    <div class="stats">
+      <div class="stat done"><div class="n" id="sDone">0</div><div class="l">到場</div></div>
+      <div class="stat"><div class="n" id="sTotal">0</div><div class="l">名單應到</div></div>
+      <div class="stat miss"><div class="n" id="sMiss">0</div><div class="l">未到</div></div>
     </div>
-  </div>
-
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <h2 style="margin:0;">已設定號碼段</h2>
-      <button class="btn btn-danger btn-sm" onclick="clearRanges()">清除全部</button>
+    <div class="substat" id="subStat"></div>
+    <div class="card">
+      <label class="fld">輸入票券序號後按報到（或按 Enter）</label>
+      <input id="serial" inputmode="numeric" autocomplete="off" placeholder="票號">
+      <button class="btn" onclick="doCheck()">報到 ✔</button>
+      <div id="result"></div>
     </div>
-    <div id="range-list"><div style="color:#aaa;text-align:center;padding:20px;font-size:13px;">尚未設定任何號碼段</div></div>
-  </div>
-
-  <div class="card" style="background:#fffbf0;border:1.5px solid #ffe08a;">
-    <p style="font-size:13px;color:#666;line-height:1.8;">
-      💡 設定後即生效，輸入序號時自動對應沙龍。號碼段可重疊，範圍越小優先度越高。若號碼不在任何範圍內，顯示「未知沙龍」並仍記錄入場。
-    </p>
-  </div>
-</div>
-</div>
-
-<!-- TAB 2 -->
-<div class="tab-content" id="tab-2">
-<div class="pad">
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <h2 style="margin:0;">各沙龍到場人次</h2>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ CSV</button>
-        <button class="btn btn-danger btn-sm" onclick="clearCheckins()">清除</button>
+    <div class="card">
+      <div class="collap-h" onclick="toggleAdd()">
+        <h3 style="margin:0">➕ 手動新增名單（貴賓／臨時）</h3>
+        <span class="arw" id="addArw">展開 ▾</span>
+      </div>
+      <div id="addBody" class="hidden" style="margin-top:12px">
+        <label class="fld">店家／姓名（必填）</label>
+        <input class="minput" id="mStore" autocomplete="off" placeholder="例：○○沙龍　或　貴賓姓名">
+        <label class="fld">業務（選填）</label>
+        <input class="minput" id="mBiz" autocomplete="off" placeholder="約訪業務">
+        <label class="fld">票號（選填，若現場有補發票券）</label>
+        <input class="minput" id="mNo" inputmode="numeric" autocomplete="off" placeholder="留空即為臨時號">
+        <button class="btn add" onclick="addWalkin()">新增並報到 ➕</button>
+        <div id="mresult"></div>
       </div>
     </div>
-    <div class="stat-grid" id="stat-grid">
-      <div style="color:#aaa;text-align:center;padding:20px;font-size:13px;grid-column:1/-1;">尚無報到記錄</div>
+    <div class="card">
+      <h3>最近報到</h3>
+      <div id="recent"><div class="muted">尚無記錄</div></div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>詳細流水帳</h2>
-    <div style="overflow-x:auto;">
-      <table>
-        <thead><tr><th>#</th><th>時間</th><th>序號</th><th>沙龍</th><th>業務</th><th></th></tr></thead>
-        <tbody id="log-body">
-          <tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px;">尚無記錄</td></tr>
-        </tbody>
-      </table>
+  <div id="viewStat" class="hidden">
+    <div class="row-btn">
+      <button onclick="exportCSV()">↓ 匯出 CSV</button>
+      <button onclick="clearRegion()">清除本場記錄</button>
+    </div>
+    <div class="card">
+      <h3>各店家到場</h3>
+      <div id="byStore"><div class="muted">尚無報到記錄</div></div>
+    </div>
+    <div class="card">
+      <h3>詳細流水帳</h3>
+      <div id="log"><div class="muted">尚無記錄</div></div>
     </div>
   </div>
 </div>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-let ranges   = [];
-let checkins = [];
-const TOTAL  = 500;
-try { ranges   = JSON.parse(localStorage.getItem('ranges')   || '[]'); } catch(e){}
-try { checkins = JSON.parse(localStorage.getItem('checkins') || '[]'); } catch(e){}
+const ROSTER={"北區": {"1": {"s": "陳處-AT旗艦店", "b": "陳景義"}, "2": {"s": "對比 Hair", "b": "陳景義"}, "3": {"s": "Season5-大安", "b": "陳景義"}, "4": {"s": "Epoch-管理處", "b": "陳景義"}, "5": {"s": "Epoch-管理處", "b": "陳景義"}, "6": {"s": "Epoch-管理處", "b": "陳景義"}, "7": {"s": "Epoch-管理處", "b": "陳景義"}, "8": {"s": "Epoch-管理處", "b": "陳景義"}, "9": {"s": "Epoch-管理處", "b": "陳景義"}, "10": {"s": "Epoch-管理處", "b": "陳景義"}, "11": {"s": "Epoch-管理處", "b": "陳景義"}, "12": {"s": "Epoch-管理處", "b": "陳景義"}, "13": {"s": "Epoch-管理處", "b": "陳景義"}, "14": {"s": "Epoch-管理處", "b": "陳景義"}, "15": {"s": "Epoch-管理處", "b": "陳景義"}, "16": {"s": "Epoch-管理處", "b": "陳景義"}, "17": {"s": "Epoch-管理處", "b": "陳景義"}, "18": {"s": "Epoch-管理處", "b": "陳景義"}, "19": {"s": "Epoch-管理處", "b": "陳景義"}, "20": {"s": "Epoch-管理處", "b": "陳景義"}, "21": {"s": "Epoch-管理處", "b": "陳景義"}, "22": {"s": "Epoch-管理處", "b": "陳景義"}, "23": {"s": "Epoch-管理處", "b": "陳景義"}, "24": {"s": "Epoch-管理處", "b": "陳景義"}, "25": {"s": "Epoch-管理處", "b": "陳景義"}, "26": {"s": "Epoch-管理處", "b": "陳景義"}, "27": {"s": "Epoch-管理處", "b": "陳景義"}, "28": {"s": "Epoch-管理處", "b": "陳景義"}, "29": {"s": "Epoch-管理處", "b": "陳景義"}, "30": {"s": "Epoch-管理處", "b": "陳景義"}, "31": {"s": "Epoch-管理處", "b": "陳景義"}, "32": {"s": "Epoch-管理處", "b": "陳景義"}, "33": {"s": "Epoch-管理處", "b": "陳景義"}, "34": {"s": "Epoch-管理處", "b": "陳景義"}, "35": {"s": "Epoch-管理處", "b": "陳景義"}, "36": {"s": "Epoch-管理處", "b": "陳景義"}, "37": {"s": "Epoch-管理處", "b": "陳景義"}, "38": {"s": "Epoch-管理處", "b": "陳景義"}, "39": {"s": "Epoch-管理處", "b": "陳景義"}, "40": {"s": "Epoch-管理處", "b": "陳景義"}, "41": {"s": "Epoch-管理處", "b": "陳景義"}, "42": {"s": "Epoch-管理處", "b": "陳景義"}, "43": {"s": "Epoch-管理處", "b": "陳景義"}, "44": {"s": "Epoch-管理處", "b": "陳景義"}, "45": {"s": "Epoch-管理處", "b": "陳景義"}, "46": {"s": "Epoch-管理處", "b": "陳景義"}, "47": {"s": "Epoch-管理處", "b": "陳景義"}, "48": {"s": "Epoch-管理處", "b": "陳景義"}, "49": {"s": "Epoch-管理處", "b": "陳景義"}, "50": {"s": "集色髮館-南京店", "b": "陳景義"}, "51": {"s": "集色髮館-南京店", "b": "陳景義"}, "52": {"s": "集色髮館-南京店", "b": "陳景義"}, "53": {"s": "集色髮館-南京店", "b": "陳景義"}, "54": {"s": "斐淬 Hair Salon", "b": "陳景義"}, "55": {"s": "斐淬 Hair Salon", "b": "陳景義"}, "56": {"s": "斐淬 Hair Salon", "b": "陳景義"}, "57": {"s": "對鏡-市府店", "b": "黄煜展"}, "58": {"s": "零 ZERO RESET HAIR-內湖", "b": "黄煜展"}, "59": {"s": "零 ZERO RESET HAIR-內湖", "b": "黄煜展"}, "60": {"s": "ML-藝術總監", "b": "黄煜展"}, "61": {"s": "ML-藝術總監", "b": "黄煜展"}, "62": {"s": "Tara", "b": "黄煜展"}, "63": {"s": "小林髮廊-小采店(員購)", "b": "陳冠文"}, "64": {"s": "小林髮廊-小采店(員購)", "b": "陳冠文"}, "65": {"s": "喬拉造型沙龍", "b": "陳冠文"}, "66": {"s": "喬拉造型沙龍", "b": "陳冠文"}, "67": {"s": "喬拉造型沙龍二店", "b": "陳冠文"}, "68": {"s": "喬拉造型沙龍二店", "b": "陳冠文"}, "69": {"s": "Bess Hair", "b": "陳冠文"}, "70": {"s": "Cinco 一店", "b": "陳冠文"}, "71": {"s": "Is Hair-林森", "b": "陳冠文"}, "72": {"s": "Is Hair-林森", "b": "陳冠文"}, "73": {"s": "Is Hair-林森", "b": "陳冠文"}, "74": {"s": "沐朵髮藝-三峽", "b": "陳冠文"}, "75": {"s": "沐朵髮藝-三峽", "b": "陳冠文"}, "76": {"s": "Nomad Hair", "b": "陳冠文"}, "77": {"s": "依林 Hair", "b": "陳冠文"}, "78": {"s": "Pei Salon One For All", "b": "陳冠文"}, "79": {"s": "The Gate", "b": "陳冠文"}, "80": {"s": "捷hair-總店", "b": "陳冠文"}, "81": {"s": "艾瑪髮型", "b": "陳冠文"}, "82": {"s": "垛芮絲", "b": "陳冠文"}, "83": {"s": "A1 Hair-林口", "b": "陳冠文"}, "84": {"s": "Comma Hair Salon*", "b": "陳冠文"}, "85": {"s": "Life Art.space", "b": "呂佳蓁"}, "86": {"s": "Life Art.space", "b": "呂佳蓁"}, "87": {"s": "Life Art.space", "b": "呂佳蓁"}, "88": {"s": "Life Art.space", "b": "呂佳蓁"}, "89": {"s": "W.trendy Hair Salon", "b": "陳亮廷"}, "90": {"s": "W.trendy Hair Salon", "b": "陳亮廷"}, "91": {"s": "Secure忠孝  備", "b": "陳亮廷"}, "92": {"s": "Secure忠孝  備", "b": "陳亮廷"}, "93": {"s": "Secure忠孝  備", "b": "陳亮廷"}, "94": {"s": "HERE-羅東", "b": "陳亮廷"}, "95": {"s": "SY HAIR中壢*", "b": "朱勁丞"}, "96": {"s": "DHA", "b": "朱勁丞"}, "97": {"s": "DHA", "b": "朱勁丞"}, "98": {"s": "Voir", "b": "朱勁丞"}, "99": {"s": "PENNY(威廉)", "b": "朱勁丞"}, "100": {"s": "Met.N Hair Salon", "b": "朱勁丞"}, "101": {"s": "Round2中壢", "b": "朱勁丞"}, "102": {"s": "Round2中壢", "b": "朱勁丞"}, "103": {"s": "Round2中壢", "b": "朱勁丞"}, "104": {"s": "OXY Hair Salon", "b": "朱勁丞"}, "105": {"s": "SP-旗艦", "b": "朱勁丞"}, "106": {"s": "SP-旗艦", "b": "朱勁丞"}, "107": {"s": "HER2.0", "b": "簡懷則"}, "108": {"s": "HER2.0", "b": "簡懷則"}, "109": {"s": "黑盒髮藝", "b": "簡懷則"}, "110": {"s": "奧創髮藝印象店-公館", "b": "簡懷則"}, "111": {"s": "See U Hair Salon", "b": "康秋樂"}, "112": {"s": "See U Hair Salon", "b": "康秋樂"}, "113": {"s": "See U Hair Salon", "b": "康秋樂"}, "114": {"s": "Yume Hair salon-汐止", "b": "康秋樂"}, "115": {"s": "Yume Hair salon-汐止", "b": "康秋樂"}, "116": {"s": "Meet UJ Salon", "b": "邱奕翔"}, "117": {"s": "Meet UJ Salon", "b": "邱奕翔"}, "118": {"s": "Ace Hair-中壢", "b": "邱奕翔"}, "119": {"s": "Seher賽赫美髮沙龍", "b": "邱奕翔"}, "120": {"s": "Knight", "b": "邱奕翔"}, "121": {"s": "Created Hair -桃園", "b": "邱奕翔"}, "122": {"s": "SIT DOWN PLEASE 大園", "b": "邱奕翔"}, "123": {"s": "理棠", "b": "邱奕翔"}, "124": {"s": "理棠", "b": "邱奕翔"}, "125": {"s": "A-CREW", "b": "邱奕翔"}, "126": {"s": "維妮 Hair Salon-樹林", "b": "魏君曄"}, "127": {"s": "維妮 Hair Salon-樹林", "b": "魏君曄"}, "128": {"s": "漫剪HAIR CUT", "b": "魏君曄"}, "129": {"s": "AC髮廊", "b": "魏君曄"}, "764": {"s": "YOUI STUDIO", "b": "鄭依庭"}, "131": {"s": "千堤-重陽館", "b": "鄭依庭"}, "132": {"s": "LINK HAIR", "b": "鄭依庭"}, "133": {"s": "LINK HAIR", "b": "鄭依庭"}, "134": {"s": "LINK HAIR", "b": "鄭依庭"}, "135": {"s": "甩甩", "b": "吳上文"}, "136": {"s": "甩甩", "b": "吳上文"}, "137": {"s": "Norman", "b": "謝和翰"}, "138": {"s": "Klatch-師大店", "b": "許瓏馨"}, "139": {"s": "Klatch-師大店", "b": "許瓏馨"}, "140": {"s": "Klatch-復興店", "b": "許瓏馨"}, "141": {"s": "陳處-PS旗艦店", "b": "陳景義"}, "142": {"s": "陳處-PS旗艦店", "b": "陳景義"}, "143": {"s": "Life art", "b": "呂佳蓁"}, "144": {"s": "Life art", "b": "呂佳蓁"}, "145": {"s": "Life art", "b": "呂佳蓁"}, "146": {"s": "Life art", "b": "呂佳蓁"}, "147": {"s": "meet salon-林口", "b": "陳亮廷"}, "148": {"s": "Secure忠孝", "b": "陳亮廷"}, "149": {"s": "日田木-仁愛", "b": "陳亮廷"}, "150": {"s": "o3o 信義", "b": "黃榮漢"}, "151": {"s": "o3o 信義", "b": "黃榮漢"}, "152": {"s": "o3o 信義", "b": "黃榮漢"}, "153": {"s": "o3o 信義", "b": "黃榮漢"}, "154": {"s": "o3o 信義", "b": "黃榮漢"}, "155": {"s": "o3o 信義", "b": "黃榮漢"}, "156": {"s": "o3o 信義", "b": "黃榮漢"}, "157": {"s": "o3o 信義", "b": "黃榮漢"}, "158": {"s": "o3o 信義", "b": "黃榮漢"}, "159": {"s": "o3o 信義", "b": "黃榮漢"}, "160": {"s": "尤卡信義", "b": "黃榮漢"}, "161": {"s": "尤卡信義", "b": "黃榮漢"}, "162": {"s": "尤卡信義", "b": "黃榮漢"}, "163": {"s": "尤卡信義", "b": "黃榮漢"}, "164": {"s": "尤卡信義", "b": "黃榮漢"}, "165": {"s": "尤卡信義", "b": "黃榮漢"}, "166": {"s": "尤卡信義", "b": "黃榮漢"}, "167": {"s": "尤卡信義", "b": "黃榮漢"}, "168": {"s": "尤卡信義", "b": "黃榮漢"}, "169": {"s": "尤卡信義", "b": "黃榮漢"}, "170": {"s": "尤拿國館", "b": "黃榮漢"}, "171": {"s": "尤拿國館", "b": "黃榮漢"}, "172": {"s": "尤拿國館", "b": "黃榮漢"}, "173": {"s": "尤拿國館", "b": "黃榮漢"}, "174": {"s": "尤拿國館", "b": "黃榮漢"}, "175": {"s": "尤拿國館", "b": "黃榮漢"}, "176": {"s": "尤拿國館", "b": "黃榮漢"}, "177": {"s": "尤拿國館", "b": "黃榮漢"}, "178": {"s": "尤拿國館", "b": "黃榮漢"}, "179": {"s": "尤拿國館", "b": "黃榮漢"}, "180": {"s": "Avery", "b": "廖本旭"}, "181": {"s": "高慈穗", "b": "吳上文"}, "182": {"s": "Kowa", "b": "朱勁丞"}, "183": {"s": "Kowa", "b": "朱勁丞"}, "184": {"s": "Kowa", "b": "朱勁丞"}, "185": {"s": "Kowa", "b": "朱勁丞"}, "186": {"s": "Kowa", "b": "朱勁丞"}, "187": {"s": "Kowa", "b": "朱勁丞"}, "188": {"s": "Kowa", "b": "朱勁丞"}, "189": {"s": "Kowa", "b": "朱勁丞"}, "190": {"s": "Kowa", "b": "朱勁丞"}, "191": {"s": "Kowa", "b": "朱勁丞"}, "192": {"s": "Kowa", "b": "朱勁丞"}, "681": {"s": "空氣概念", "b": "朱勁丞"}, "682": {"s": "田 MY FAITH 春德店", "b": "朱勁丞"}, "683": {"s": "澤苑髮廊", "b": "呂佳蓁"}, "684": {"s": "澤苑髮廊", "b": "呂佳蓁"}, "685": {"s": "In% Hair-仁愛店", "b": "許瓏馨"}, "686": {"s": "In% Hair-仁愛店", "b": "許瓏馨"}, "687": {"s": "In% Hair-仁愛店", "b": "許瓏馨"}, "688": {"s": "In% Hair-仁愛店", "b": "許瓏馨"}, "689": {"s": "依林 Hair", "b": "陳冠文"}, "690": {"s": "依林 Hair", "b": "陳冠文"}, "691": {"s": "GO ON*", "b": "陳亮廷"}, "692": {"s": "SIEG", "b": "陳亮廷"}, "693": {"s": "SIEG", "b": "陳亮廷"}, "694": {"s": "SIEG", "b": "陳亮廷"}, "695": {"s": "SIEG", "b": "陳亮廷"}, "696": {"s": "SIEG", "b": "陳亮廷"}, "697": {"s": "SIEG", "b": "陳亮廷"}, "698": {"s": "SIEG", "b": "陳亮廷"}, "699": {"s": "SIEG", "b": "陳亮廷"}, "700": {"s": "SIEG", "b": "陳亮廷"}, "701": {"s": "SIEG", "b": "陳亮廷"}, "702": {"s": "SIEG", "b": "陳亮廷"}, "703": {"s": "SIEG", "b": "陳亮廷"}, "704": {"s": "SIEG", "b": "陳亮廷"}, "705": {"s": "SIEG", "b": "陳亮廷"}, "706": {"s": "SIEG", "b": "陳亮廷"}, "707": {"s": "SIEG", "b": "陳亮廷"}, "708": {"s": "SIEG", "b": "陳亮廷"}, "709": {"s": "SIEG", "b": "陳亮廷"}, "710": {"s": "SIEG", "b": "陳亮廷"}, "711": {"s": "SIEG", "b": "陳亮廷"}, "712": {"s": "ASCHON", "b": "陳亮廷"}, "713": {"s": "ASCHON", "b": "陳亮廷"}, "714": {"s": "ASCHON", "b": "陳亮廷"}, "715": {"s": "ASCHON", "b": "陳亮廷"}, "716": {"s": "ASCHON", "b": "陳亮廷"}, "717": {"s": "ASCHON", "b": "陳亮廷"}, "718": {"s": "ASCHON", "b": "陳亮廷"}, "719": {"s": "ASCHON", "b": "陳亮廷"}, "720": {"s": "ASCHON", "b": "陳亮廷"}, "721": {"s": "ASCHON", "b": "陳亮廷"}, "722": {"s": "ASCHON", "b": "陳亮廷"}, "723": {"s": "ASCHON", "b": "陳亮廷"}, "724": {"s": "ASCHON", "b": "陳亮廷"}, "725": {"s": "ASCHON", "b": "陳亮廷"}, "726": {"s": "ASCHON", "b": "陳亮廷"}, "727": {"s": "ASCHON", "b": "陳亮廷"}, "728": {"s": "ASCHON", "b": "陳亮廷"}, "729": {"s": "ASCHON", "b": "陳亮廷"}, "730": {"s": "ASCHON", "b": "陳亮廷"}, "731": {"s": "ASCHON", "b": "陳亮廷"}, "732": {"s": "ASCHON", "b": "陳亮廷"}, "733": {"s": "ASCHON", "b": "陳亮廷"}, "734": {"s": "ASCHON", "b": "陳亮廷"}, "735": {"s": "ASCHON", "b": "陳亮廷"}, "736": {"s": "ASCHON", "b": "陳亮廷"}, "737": {"s": "ASCHON", "b": "陳亮廷"}, "738": {"s": "ASCHON", "b": "陳亮廷"}, "739": {"s": "ASCHON", "b": "陳亮廷"}, "740": {"s": "ASCHON", "b": "陳亮廷"}, "741": {"s": "ASCHON", "b": "陳亮廷"}, "742": {"s": "WegoLi hair", "b": "康秋樂"}, "743": {"s": "WegoLi hair", "b": "康秋樂"}, "744": {"s": "平方米髮藝", "b": "鄭依庭"}, "745": {"s": "O3O新竹", "b": "黃榮漢"}, "746": {"s": "O3O新竹", "b": "黃榮漢"}, "747": {"s": "O3O新竹", "b": "黃榮漢"}, "748": {"s": "O3O新竹", "b": "黃榮漢"}, "749": {"s": "O3O新竹", "b": "黃榮漢"}, "750": {"s": "O3O新竹", "b": "黃榮漢"}, "751": {"s": "O3O新竹", "b": "黃榮漢"}, "752": {"s": "O3O新竹", "b": "黃榮漢"}, "753": {"s": "O3O新竹", "b": "黃榮漢"}, "754": {"s": "O3O新竹", "b": "黃榮漢"}, "755": {"s": "O3O新竹", "b": "黃榮漢"}, "756": {"s": "O3O新竹", "b": "黃榮漢"}, "757": {"s": "O3O新竹", "b": "黃榮漢"}, "758": {"s": "O3O新竹", "b": "黃榮漢"}, "759": {"s": "O3O新竹", "b": "黃榮漢"}, "760": {"s": "O3O新竹", "b": "黃榮漢"}, "761": {"s": "O3O新竹", "b": "黃榮漢"}, "762": {"s": "O3O新竹", "b": "黃榮漢"}, "763": {"s": "O3O新竹", "b": "黃榮漢"}}, "中區": {"201": {"s": "Nosy-台中", "b": "陳景義"}, "202": {"s": "Nosy-台中", "b": "陳景義"}, "203": {"s": "Nosy-台中", "b": "陳景義"}, "204": {"s": "Nosy-台中", "b": "陳景義"}, "205": {"s": "Nosy-台中", "b": "陳景義"}, "206": {"s": "Nosy-台中", "b": "陳景義"}, "207": {"s": "吳處-上越公益店", "b": "黄煜展"}, "208": {"s": "吳處-上越公益店", "b": "黄煜展"}, "209": {"s": "O3O-北屯旗艦店", "b": "黃榮漢"}, "210": {"s": "O3O-北屯旗艦店", "b": "黃榮漢"}, "211": {"s": "awan", "b": "廖本旭"}, "212": {"s": "1.0 RID", "b": "吳上文"}, "213": {"s": "1.0 RID", "b": "吳上文"}, "214": {"s": "綠沐-孔雀", "b": "吳上文"}, "215": {"s": "綠沐-孔雀", "b": "吳上文"}, "216": {"s": "BT HAIR", "b": "吳上文"}, "217": {"s": "THE VALE 雲林", "b": "吳上文"}, "218": {"s": "THE VALE 雲林", "b": "吳上文"}, "219": {"s": "THE VALE 雲林", "b": "吳上文"}, "220": {"s": "THE VALE 雲林", "b": "吳上文"}, "221": {"s": "THE VALE 雲林", "b": "吳上文"}, "222": {"s": "THE VALE 雲林", "b": "吳上文"}, "223": {"s": "THE REBELS HAIR", "b": "吳上文"}, "224": {"s": "HOCC", "b": "吳上文"}, "225": {"s": "HOCC", "b": "吳上文"}, "226": {"s": "HOCC", "b": "吳上文"}, "227": {"s": "HOCC", "b": "吳上文"}, "228": {"s": "HOCC", "b": "吳上文"}, "229": {"s": "HOCC", "b": "吳上文"}, "230": {"s": "HOCC", "b": "吳上文"}, "231": {"s": "HOCC", "b": "吳上文"}, "232": {"s": "HOCC", "b": "吳上文"}, "233": {"s": "HOCC", "b": "吳上文"}, "234": {"s": "HOCC", "b": "吳上文"}, "235": {"s": "HOCC", "b": "吳上文"}, "236": {"s": "HOCC", "b": "吳上文"}, "237": {"s": "HOCC", "b": "吳上文"}, "238": {"s": "HOCC", "b": "吳上文"}, "239": {"s": "HOCC", "b": "吳上文"}, "240": {"s": "HOCC", "b": "吳上文"}, "241": {"s": "HOCC", "b": "吳上文"}, "242": {"s": "HOCC", "b": "吳上文"}, "243": {"s": "HOCC", "b": "吳上文"}, "244": {"s": "HOCC", "b": "吳上文"}, "245": {"s": "HOCC", "b": "吳上文"}, "246": {"s": "HOCC", "b": "吳上文"}, "247": {"s": "HOCC", "b": "吳上文"}, "248": {"s": "HOCC", "b": "吳上文"}, "249": {"s": "HOCC", "b": "吳上文"}, "250": {"s": "HOCC", "b": "吳上文"}, "251": {"s": "HOCC", "b": "吳上文"}, "252": {"s": "HOCC", "b": "吳上文"}, "253": {"s": "HOCC", "b": "吳上文"}, "254": {"s": "HOCC", "b": "吳上文"}, "255": {"s": "HOCC", "b": "吳上文"}, "256": {"s": "HOCC", "b": "吳上文"}, "257": {"s": "ROUND2 中區", "b": "吳上文"}, "258": {"s": "ROUND2 中區", "b": "吳上文"}, "259": {"s": "ROUND2 中區", "b": "吳上文"}, "260": {"s": "ROUND2 中區", "b": "吳上文"}, "261": {"s": "ROUND2 中區", "b": "吳上文"}, "262": {"s": "ROUND2 中區", "b": "吳上文"}, "263": {"s": "ROUND2 中區", "b": "吳上文"}, "264": {"s": "ROUND2 中區", "b": "吳上文"}, "265": {"s": "ROUND2 中區", "b": "吳上文"}, "266": {"s": "ROUND2 中區", "b": "吳上文"}, "267": {"s": "ROUND2 中區", "b": "吳上文"}, "268": {"s": "ROUND2 中區", "b": "吳上文"}, "269": {"s": "ROUND2 中區", "b": "吳上文"}, "270": {"s": "ROUND2 中區", "b": "吳上文"}, "271": {"s": "ROUND2 中區", "b": "吳上文"}, "272": {"s": "ROUND2 中區", "b": "吳上文"}, "273": {"s": "ROUND2 中區", "b": "吳上文"}, "274": {"s": "ROUND2 中區", "b": "吳上文"}, "275": {"s": "ROUND2 中區", "b": "吳上文"}, "276": {"s": "ROUND2 中區", "b": "吳上文"}, "277": {"s": "ROUND2 中區", "b": "吳上文"}, "278": {"s": "ROUND2 中區", "b": "吳上文"}, "279": {"s": "ROUND2 中區", "b": "吳上文"}, "280": {"s": "ROUND2 中區", "b": "吳上文"}, "281": {"s": "ROUND2 中區", "b": "吳上文"}, "282": {"s": "ROUND2 中區", "b": "吳上文"}, "283": {"s": "ROUND2 中區", "b": "吳上文"}, "284": {"s": "ROUND2 中區", "b": "吳上文"}, "285": {"s": "ROUND2 中區", "b": "吳上文"}, "286": {"s": "ROUND2 中區", "b": "吳上文"}, "287": {"s": "ROUND2 中區", "b": "吳上文"}, "288": {"s": "ROUND2 中區", "b": "吳上文"}, "289": {"s": "ROUND2 中區", "b": "吳上文"}, "290": {"s": "ROUND2 中區", "b": "吳上文"}, "291": {"s": "ROUND2 中區", "b": "吳上文"}, "292": {"s": "ROUND2 中區", "b": "吳上文"}, "293": {"s": "ROUND2 中區", "b": "吳上文"}, "294": {"s": "ROUND2 中區", "b": "吳上文"}, "295": {"s": "ROUND2 中區", "b": "吳上文"}, "296": {"s": "ROUND2 中區", "b": "吳上文"}, "297": {"s": "捲捲", "b": "吳上文"}, "298": {"s": "捲捲", "b": "吳上文"}, "299": {"s": "捲捲", "b": "吳上文"}, "300": {"s": "捲捲", "b": "吳上文"}, "301": {"s": "捲捲", "b": "吳上文"}, "302": {"s": "捲捲", "b": "吳上文"}, "303": {"s": "捲捲", "b": "吳上文"}, "304": {"s": "捲捲", "b": "吳上文"}, "305": {"s": "捲捲", "b": "吳上文"}, "306": {"s": "捲捲", "b": "吳上文"}, "307": {"s": "捲捲", "b": "吳上文"}, "308": {"s": "捲捲", "b": "吳上文"}, "309": {"s": "捲捲", "b": "吳上文"}, "310": {"s": "捲捲", "b": "吳上文"}, "311": {"s": "捲捲", "b": "吳上文"}, "312": {"s": "捲捲", "b": "吳上文"}, "313": {"s": "捲捲", "b": "吳上文"}, "314": {"s": "捲捲", "b": "吳上文"}, "315": {"s": "捲捲", "b": "吳上文"}, "316": {"s": "捲捲", "b": "吳上文"}, "317": {"s": "捲捲", "b": "吳上文"}, "318": {"s": "捲捲", "b": "吳上文"}, "319": {"s": "捲捲", "b": "吳上文"}, "320": {"s": "捲捲", "b": "吳上文"}, "321": {"s": "捲捲", "b": "吳上文"}, "322": {"s": "捲捲", "b": "吳上文"}, "323": {"s": "捲捲", "b": "吳上文"}, "324": {"s": "捲捲", "b": "吳上文"}, "325": {"s": "捲捲-勤美", "b": "吳上文"}, "326": {"s": "捲捲-勤美", "b": "吳上文"}, "327": {"s": "捲捲-勤美", "b": "吳上文"}, "328": {"s": "捲捲-勤美", "b": "吳上文"}, "329": {"s": "捲捲-勤美", "b": "吳上文"}, "330": {"s": "捲捲-勤美", "b": "吳上文"}, "331": {"s": "捲捲-勤美", "b": "吳上文"}, "332": {"s": "MIO", "b": "謝和翰"}, "333": {"s": "MIO", "b": "謝和翰"}, "334": {"s": "MIJO", "b": "謝和翰"}, "335": {"s": "MIJO", "b": "謝和翰"}, "336": {"s": "WILL HAIR", "b": "謝和翰"}, "337": {"s": "WILL HAIR", "b": "謝和翰"}, "338": {"s": "WILL HAIR", "b": "謝和翰"}, "339": {"s": "WILL HAIR", "b": "謝和翰"}, "340": {"s": "WILL HAIR", "b": "謝和翰"}, "341": {"s": "髮序美學", "b": "謝和翰"}, "342": {"s": "JU劫筑", "b": "謝和翰"}, "343": {"s": "Norman", "b": "謝和翰"}, "344": {"s": "髮旅", "b": "謝和翰"}, "345": {"s": "髮旅", "b": "謝和翰"}, "346": {"s": "弘光科大-美髮系", "b": "吳上文"}, "347": {"s": "阿卡西", "b": "梁皓淳"}, "348": {"s": "阿卡西", "b": "梁皓淳"}, "349": {"s": "Gile", "b": "梁皓淳"}, "350": {"s": "PALIPALI", "b": "梁皓淳"}, "351": {"s": "有你U.ni", "b": "梁皓淳"}, "352": {"s": "有你U.ni", "b": "梁皓淳"}, "353": {"s": "有你U.ni", "b": "梁皓淳"}, "354": {"s": "有你U.ni", "b": "梁皓淳"}, "355": {"s": "M salon", "b": "梁皓淳"}, "356": {"s": "髮村", "b": "洪詩媛"}, "357": {"s": "髮村", "b": "洪詩媛"}, "358": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "359": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "360": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "361": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "362": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "363": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "364": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "365": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "366": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "367": {"s": "尤卡台中旗艦", "b": "黃榮漢"}, "368": {"s": "尤拿台南", "b": "黃榮漢"}, "369": {"s": "尤拿台南", "b": "黃榮漢"}, "370": {"s": "尤拿台南", "b": "黃榮漢"}, "371": {"s": "尤拿台南", "b": "黃榮漢"}, "372": {"s": "尤拿台南", "b": "黃榮漢"}, "373": {"s": "尤拿台南", "b": "黃榮漢"}, "374": {"s": "尤拿台南", "b": "黃榮漢"}, "375": {"s": "尤拿台南", "b": "黃榮漢"}, "376": {"s": "尤拿台南", "b": "黃榮漢"}, "377": {"s": "尤拿台南", "b": "黃榮漢"}, "378": {"s": "ICOLOR髮廊-北屯", "b": "廖本旭"}, "379": {"s": "ICOLOR髮廊-北屯", "b": "廖本旭"}, "380": {"s": "EASYCUT 忠明南", "b": "吳上文"}, "381": {"s": "EASYCUT 忠明南", "b": "吳上文"}, "382": {"s": "O3o 北屯", "b": "黃榮漢"}, "383": {"s": "O3o 北屯", "b": "黃榮漢"}, "384": {"s": "O3o 北屯", "b": "黃榮漢"}, "385": {"s": "O3o 北屯", "b": "黃榮漢"}, "386": {"s": "O3o 北屯", "b": "黃榮漢"}, "387": {"s": "O3o 北屯", "b": "黃榮漢"}, "388": {"s": "O3o 北屯", "b": "黃榮漢"}, "389": {"s": "O3o 北屯", "b": "黃榮漢"}, "390": {"s": "O3o 北屯", "b": "黃榮漢"}, "391": {"s": "O3o 北屯", "b": "黃榮漢"}, "392": {"s": "O3o 北屯", "b": "黃榮漢"}, "393": {"s": "O3o 北屯", "b": "黃榮漢"}, "394": {"s": "O3o 北屯", "b": "黃榮漢"}, "395": {"s": "O3o 北屯", "b": "黃榮漢"}, "396": {"s": "O3o 北屯", "b": "黃榮漢"}, "397": {"s": "O3o 北屯", "b": "黃榮漢"}, "398": {"s": "O3o 北屯", "b": "黃榮漢"}, "399": {"s": "O3o 北屯", "b": "黃榮漢"}, "400": {"s": "O3o 北屯", "b": "黃榮漢"}, "601": {"s": "O3o 北屯", "b": "黃榮漢"}, "602": {"s": "O3o 北屯", "b": "黃榮漢"}, "603": {"s": "O3o 北屯", "b": "黃榮漢"}, "604": {"s": "O3o 北屯", "b": "黃榮漢"}, "605": {"s": "O3o 北屯", "b": "黃榮漢"}, "606": {"s": "O3o 北屯", "b": "黃榮漢"}, "607": {"s": "O3o 北屯", "b": "黃榮漢"}, "608": {"s": "O3o 北屯", "b": "黃榮漢"}, "609": {"s": "O3o 北屯", "b": "黃榮漢"}, "610": {"s": "O3o 北屯", "b": "黃榮漢"}, "611": {"s": "O3o 北屯", "b": "黃榮漢"}, "612": {"s": "O3o 北屯", "b": "黃榮漢"}, "613": {"s": "O3o 北屯", "b": "黃榮漢"}, "614": {"s": "O3o 北屯", "b": "黃榮漢"}, "615": {"s": "O3o 北屯", "b": "黃榮漢"}, "616": {"s": "O3o 北屯", "b": "黃榮漢"}, "617": {"s": "O3o 北屯", "b": "黃榮漢"}, "618": {"s": "O3o 北屯", "b": "黃榮漢"}, "619": {"s": "O3o 北屯", "b": "黃榮漢"}, "620": {"s": "O3o 北屯", "b": "黃榮漢"}, "621": {"s": "O3o 北屯", "b": "黃榮漢"}, "622": {"s": "O3o 北屯", "b": "黃榮漢"}, "623": {"s": "O3o 北屯", "b": "黃榮漢"}, "624": {"s": "O3o 北屯", "b": "黃榮漢"}, "625": {"s": "O3o 北屯", "b": "黃榮漢"}, "626": {"s": "O3o 北屯", "b": "黃榮漢"}, "627": {"s": "O3o 北屯", "b": "黃榮漢"}, "628": {"s": "O3o 北屯", "b": "黃榮漢"}, "629": {"s": "O3o 北屯", "b": "黃榮漢"}, "630": {"s": "O3o 北屯", "b": "黃榮漢"}, "631": {"s": "O3o 北屯", "b": "黃榮漢"}, "632": {"s": "O3o 北屯", "b": "黃榮漢"}, "633": {"s": "O3o 北屯", "b": "黃榮漢"}, "634": {"s": "O3o 北屯", "b": "黃榮漢"}, "635": {"s": "O3o 北屯", "b": "黃榮漢"}, "636": {"s": "O3o 北屯", "b": "黃榮漢"}, "637": {"s": "O3o 北屯", "b": "黃榮漢"}, "638": {"s": "O3o 北屯", "b": "黃榮漢"}, "639": {"s": "O3o 北屯", "b": "黃榮漢"}, "640": {"s": "O3o 北屯", "b": "黃榮漢"}, "641": {"s": "O3o 北屯", "b": "黃榮漢"}, "642": {"s": "O3o 北屯", "b": "黃榮漢"}, "643": {"s": "O3o 北屯", "b": "黃榮漢"}, "644": {"s": "O3o 北屯", "b": "黃榮漢"}, "645": {"s": "O3o 北屯", "b": "黃榮漢"}, "646": {"s": "O3o 北屯", "b": "黃榮漢"}, "678": {"s": "ICOLOR髮廊-北屯", "b": "廖本旭"}, "679": {"s": "ICOLOR髮廊-北屯", "b": "廖本旭"}, "765": {"s": "thefour", "b": "黃榮漢"}, "766": {"s": "thefour", "b": "黃榮漢"}, "767": {"s": "thefour", "b": "黃榮漢"}, "768": {"s": "Hello Tryit", "b": "廖本旭"}, "769": {"s": "Hello Tryit", "b": "廖本旭"}, "770": {"s": "Hello Tryit", "b": "廖本旭"}, "771": {"s": "熹髮廊", "b": "吳上文"}, "772": {"s": "熹髮廊", "b": "吳上文"}, "773": {"s": "熹髮廊", "b": "吳上文"}, "774": {"s": "熹髮廊", "b": "吳上文"}, "775": {"s": "熹髮廊", "b": "吳上文"}, "776": {"s": "熹髮廊", "b": "吳上文"}, "777": {"s": "熹髮廊", "b": "吳上文"}, "778": {"s": "熹髮廊", "b": "吳上文"}, "779": {"s": "Gile", "b": "梁皓淳"}, "780": {"s": "Gile", "b": "梁皓淳"}, "781": {"s": "Gile", "b": "梁皓淳"}, "782": {"s": "Gile", "b": "梁皓淳"}, "783": {"s": "日涵髮式-PHIROS1", "b": "梁皓淳"}, "784": {"s": "日涵髮式-PHIROS", "b": "梁皓淳"}, "786": {"s": "貝蒂髮藝", "b": "梁皓淳"}, "787": {"s": "捲捲-河南", "b": "洪詩媛"}, "788": {"s": "LIFE HAIR-台中(JOHNSON)", "b": "洪詩媛"}, "785": {"s": "芙若蕥*", "b": "陳威州"}}, "南區": {"401": {"s": "唐林salon", "b": "簡懷則"}, "402": {"s": "小樹修修-二店", "b": "邱奕翔"}, "403": {"s": "尤媞 府前", "b": "廖本旭"}, "404": {"s": "尤媞 府前", "b": "廖本旭"}, "405": {"s": "尤媞 府前", "b": "廖本旭"}, "406": {"s": "ROUND2 高雄", "b": "吳上文"}, "407": {"s": "ROUND2 高雄", "b": "吳上文"}, "408": {"s": "ROUND2 高雄", "b": "吳上文"}, "409": {"s": "ROUND2 高雄", "b": "吳上文"}, "410": {"s": "ROUND2 高雄", "b": "吳上文"}, "411": {"s": "ROUND2 高雄", "b": "吳上文"}, "412": {"s": "ROUND2 高雄", "b": "吳上文"}, "413": {"s": "ROUND2 高雄", "b": "吳上文"}, "414": {"s": "ROUND2 高雄", "b": "吳上文"}, "415": {"s": "ROUND2 高雄", "b": "吳上文"}, "416": {"s": "ROUND2 高雄", "b": "吳上文"}, "417": {"s": "ROUND2 高雄", "b": "吳上文"}, "418": {"s": "ROUND2 高雄", "b": "吳上文"}, "419": {"s": "ROUND2 高雄", "b": "吳上文"}, "420": {"s": "ROUND2 高雄", "b": "吳上文"}, "421": {"s": "ROUND2 高雄", "b": "吳上文"}, "422": {"s": "ROUND2 高雄", "b": "吳上文"}, "423": {"s": "ROUND2 高雄", "b": "吳上文"}, "424": {"s": "ROUND2 高雄", "b": "吳上文"}, "425": {"s": "ROUND2 高雄", "b": "吳上文"}, "426": {"s": "ROUND2 高雄", "b": "吳上文"}, "427": {"s": "ROUND2 高雄", "b": "吳上文"}, "428": {"s": "ROUND2 高雄", "b": "吳上文"}, "429": {"s": "ROUND2 高雄", "b": "吳上文"}, "430": {"s": "ROUND2 高雄", "b": "吳上文"}, "431": {"s": "ROUND2 高雄", "b": "吳上文"}, "432": {"s": "ROUND2 高雄", "b": "吳上文"}, "433": {"s": "ROUND2 高雄", "b": "吳上文"}, "434": {"s": "ROUND2 高雄", "b": "吳上文"}, "435": {"s": "ROUND2 高雄", "b": "吳上文"}, "436": {"s": "ROUND2 高雄", "b": "吳上文"}, "437": {"s": "ROUND2 高雄", "b": "吳上文"}, "438": {"s": "ROUND2 高雄", "b": "吳上文"}, "439": {"s": "ROUND2 高雄", "b": "吳上文"}, "440": {"s": "ROUND2 高雄", "b": "吳上文"}, "441": {"s": "ROUND2 高雄", "b": "吳上文"}, "442": {"s": "ROUND2 高雄", "b": "吳上文"}, "443": {"s": "ROUND2 高雄", "b": "吳上文"}, "444": {"s": "ROUND2 高雄", "b": "吳上文"}, "445": {"s": "ROUND2 高雄", "b": "吳上文"}, "446": {"s": "ROUND2 高雄", "b": "吳上文"}, "447": {"s": "ROUND2 高雄", "b": "吳上文"}, "448": {"s": "ROUND2 高雄", "b": "吳上文"}, "449": {"s": "ROUND2 高雄", "b": "吳上文"}, "450": {"s": "ROUND2 高雄", "b": "吳上文"}, "451": {"s": "ROUND2 高雄", "b": "吳上文"}, "452": {"s": "ROUND2 高雄", "b": "吳上文"}, "453": {"s": "ROUND2 高雄", "b": "吳上文"}, "454": {"s": "ROUND2 高雄", "b": "吳上文"}, "455": {"s": "ROUND2 高雄", "b": "吳上文"}, "456": {"s": "ROUND2 高雄", "b": "吳上文"}, "457": {"s": "ROUND2 高雄", "b": "吳上文"}, "458": {"s": "ROUND2 高雄", "b": "吳上文"}, "459": {"s": "ROUND2 高雄", "b": "吳上文"}, "460": {"s": "ROUND2 高雄", "b": "吳上文"}, "461": {"s": "ROUND2 高雄", "b": "吳上文"}, "462": {"s": "ROUND2 高雄", "b": "吳上文"}, "463": {"s": "ROUND2 高雄", "b": "吳上文"}, "464": {"s": "ROUND2 高雄", "b": "吳上文"}, "465": {"s": "ROUND2 高雄", "b": "吳上文"}, "466": {"s": "ROUND2 高雄", "b": "吳上文"}, "467": {"s": "ROUND2 高雄", "b": "吳上文"}, "468": {"s": "ROUND2 高雄", "b": "吳上文"}, "469": {"s": "ROUND2 高雄", "b": "吳上文"}, "470": {"s": "ROUND2 高雄", "b": "吳上文"}, "471": {"s": "ROUND2 高雄", "b": "吳上文"}, "472": {"s": "ROUND2 高雄", "b": "吳上文"}, "473": {"s": "ROUND2 高雄", "b": "吳上文"}, "474": {"s": "ROUND2 高雄", "b": "吳上文"}, "475": {"s": "ROUND2 高雄", "b": "吳上文"}, "476": {"s": "ROUND2 高雄", "b": "吳上文"}, "477": {"s": "ROUND2 高雄", "b": "吳上文"}, "478": {"s": "ROUND2 高雄", "b": "吳上文"}, "479": {"s": "ROUND2 高雄", "b": "吳上文"}, "480": {"s": "ROUND2 高雄", "b": "吳上文"}, "481": {"s": "ROUND2 高雄", "b": "吳上文"}, "482": {"s": "ROUND2 高雄", "b": "吳上文"}, "483": {"s": "ROUND2 高雄", "b": "吳上文"}, "484": {"s": "ROUND2 高雄", "b": "吳上文"}, "485": {"s": "ROUND2 高雄", "b": "吳上文"}, "486": {"s": "ROUND2 高雄", "b": "吳上文"}, "487": {"s": "ROUND2 高雄", "b": "吳上文"}, "488": {"s": "ROUND2 高雄", "b": "吳上文"}, "489": {"s": "ROUND2 高雄", "b": "吳上文"}, "490": {"s": "ROUND2 高雄", "b": "吳上文"}, "491": {"s": "ROUND2 高雄", "b": "吳上文"}, "492": {"s": "ROUND2 高雄", "b": "吳上文"}, "493": {"s": "ROUND2 高雄", "b": "吳上文"}, "494": {"s": "ROUND2 高雄", "b": "吳上文"}, "495": {"s": "ROUND2 高雄", "b": "吳上文"}, "496": {"s": "ROUND2 高雄", "b": "吳上文"}, "497": {"s": "ROUND2 高雄", "b": "吳上文"}, "498": {"s": "ROUND2 高雄", "b": "吳上文"}, "499": {"s": "ROUND2 高雄", "b": "吳上文"}, "500": {"s": "ROUND2 高雄", "b": "吳上文"}, "501": {"s": "Norman", "b": "謝和翰"}, "502": {"s": "Tina", "b": "潘篤志"}, "503": {"s": "卡賀", "b": "潘篤志"}, "504": {"s": "分人", "b": "潘篤志"}, "505": {"s": "她說", "b": "潘篤志"}, "506": {"s": "她說", "b": "潘篤志"}, "507": {"s": "她說", "b": "潘篤志"}, "508": {"s": "她說", "b": "潘篤志"}, "509": {"s": "她說", "b": "潘篤志"}, "510": {"s": "苑 維多", "b": "潘篤志"}, "511": {"s": "JESSICA潔西卡", "b": "潘篤志"}, "512": {"s": "AQUA", "b": "潘篤志"}, "513": {"s": "ISO", "b": "潘篤志"}, "514": {"s": "ISO", "b": "潘篤志"}, "515": {"s": "ISO", "b": "潘篤志"}, "516": {"s": "ISO", "b": "潘篤志"}, "517": {"s": "ISO", "b": "潘篤志"}, "518": {"s": "u-zar", "b": "潘篤志"}, "519": {"s": "PS公主殿堂", "b": "陳宜楨"}, "520": {"s": "PS公主殿堂", "b": "陳宜楨"}, "521": {"s": "JSone仁二店", "b": "陳宜楨"}, "522": {"s": "JSone仁二店", "b": "陳宜楨"}, "523": {"s": "JSone仁二店", "b": "陳宜楨"}, "524": {"s": "斯梵", "b": "陳宜楨"}, "525": {"s": "斯梵", "b": "陳宜楨"}, "526": {"s": "斯梵", "b": "陳宜楨"}, "527": {"s": "佐hair", "b": "陳宜楨"}, "528": {"s": "弎時沙龍", "b": "陳宜楨"}, "529": {"s": "莫而髮藝", "b": "陳宜楨"}, "530": {"s": "HAVE FATE SALON", "b": "陳宜楨"}, "531": {"s": "靚hair", "b": "陳宜楨"}, "532": {"s": "優的髮藝", "b": "陳宜楨"}, "533": {"s": "優的髮藝", "b": "陳宜楨"}, "534": {"s": "優的髮藝", "b": "陳宜楨"}, "535": {"s": "優的髮藝", "b": "陳宜楨"}, "536": {"s": "優的髮藝", "b": "陳宜楨"}, "537": {"s": "有間沙龍-楠梓", "b": "陳宜楨"}, "538": {"s": "鉑鬲salon", "b": "陳宜楨"}, "539": {"s": "鉑鬲salon", "b": "陳宜楨"}, "540": {"s": "鉑鬲salon", "b": "陳宜楨"}, "541": {"s": "原沐", "b": "曾子倚"}, "542": {"s": "原沐", "b": "曾子倚"}, "543": {"s": "a-man", "b": "曾子倚"}, "544": {"s": "慕廊", "b": "曾子倚"}, "545": {"s": "三月hair", "b": "曾子倚"}, "546": {"s": "三月hair", "b": "曾子倚"}, "547": {"s": "MOI", "b": "曾子倚"}, "548": {"s": "自在", "b": "曾子倚"}, "549": {"s": "自在", "b": "曾子倚"}, "550": {"s": "巴栗", "b": "曾子倚"}, "551": {"s": "巴栗", "b": "曾子倚"}, "552": {"s": "曼都-大橋店", "b": "曾子倚"}, "553": {"s": "曼都-大橋店", "b": "曾子倚"}, "554": {"s": "有理", "b": "曾子倚"}, "555": {"s": "有理", "b": "曾子倚"}, "556": {"s": "有理", "b": "曾子倚"}, "557": {"s": "E+HAIR SALON", "b": "簡志銘"}, "558": {"s": "E+HAIR SALON", "b": "簡志銘"}, "559": {"s": "亮麗髮型", "b": "簡志銘"}, "560": {"s": "WEN", "b": "簡志銘"}, "561": {"s": "艾莉時尚造型", "b": "簡志銘"}, "562": {"s": "Yog岡山", "b": "潘篤志"}, "563": {"s": "Yog岡山", "b": "潘篤志"}, "564": {"s": "Yog岡山", "b": "潘篤志"}, "565": {"s": "Yog岡山", "b": "潘篤志"}, "566": {"s": "緒玖沙龍", "b": "潘篤志"}, "567": {"s": "緒玖沙龍", "b": "潘篤志"}, "568": {"s": "緒玖沙龍", "b": "潘篤志"}, "569": {"s": "緒玖沙龍", "b": "潘篤志"}, "570": {"s": "緒玖沙龍", "b": "潘篤志"}, "571": {"s": "緒玖沙龍", "b": "潘篤志"}, "572": {"s": "緒玖沙龍", "b": "潘篤志"}, "573": {"s": "緒玖沙龍", "b": "潘篤志"}, "574": {"s": "LUVAURA SALON", "b": "潘篤志"}, "575": {"s": "LUVAURA SALON", "b": "潘篤志"}, "576": {"s": "PS公主殿堂", "b": "陳宜楨"}, "577": {"s": "鉑鬲(純上課8000*7折", "b": "陳宜楨"}, "578": {"s": "簡守苗", "b": "陳宜楨"}, "579": {"s": "A.Y HAIR SALON", "b": "陳宜楨"}, "580": {"s": "MINA HAIR", "b": "簡志銘"}, "581": {"s": "MINA HAIR", "b": "簡志銘"}, "582": {"s": "MINA HAIR", "b": "簡志銘"}, "583": {"s": "RAW-THE XX一店", "b": "黃榮漢"}, "584": {"s": "RAW-THE XX一店", "b": "黃榮漢"}, "585": {"s": "RAW-THE XX一店", "b": "黃榮漢"}, "586": {"s": "RAW-THE XX一店", "b": "黃榮漢"}, "587": {"s": "o3o 勤美", "b": "黃榮漢"}, "588": {"s": "o3o 勤美", "b": "黃榮漢"}, "589": {"s": "o3o 勤美", "b": "黃榮漢"}, "590": {"s": "o3o 勤美", "b": "黃榮漢"}, "591": {"s": "尤拿概念", "b": "黃榮漢"}, "592": {"s": "尤拿概念", "b": "黃榮漢"}, "593": {"s": "尤拿概念", "b": "黃榮漢"}, "594": {"s": "尤拿概念", "b": "黃榮漢"}, "595": {"s": "尤拿概念", "b": "黃榮漢"}, "596": {"s": "尤拿概念", "b": "黃榮漢"}, "597": {"s": "尤拿概念", "b": "黃榮漢"}, "598": {"s": "尤拿概念", "b": "黃榮漢"}, "599": {"s": "尤拿概念", "b": "黃榮漢"}, "600": {"s": "尤拿概念", "b": "黃榮漢"}, "647": {"s": "Map 北門", "b": "黃榮漢"}, "648": {"s": "Map 北門", "b": "黃榮漢"}, "649": {"s": "Map 北門", "b": "黃榮漢"}, "650": {"s": "Map 北門", "b": "黃榮漢"}, "651": {"s": "Map 北門", "b": "黃榮漢"}, "652": {"s": "Map 北門", "b": "黃榮漢"}, "653": {"s": "Map 北門", "b": "黃榮漢"}, "654": {"s": "Map 北門", "b": "黃榮漢"}, "655": {"s": "Map 北門", "b": "黃榮漢"}, "656": {"s": "Map 北門", "b": "黃榮漢"}, "657": {"s": "Map 北門", "b": "黃榮漢"}, "658": {"s": "Map 北門", "b": "黃榮漢"}, "659": {"s": "Map 北門", "b": "黃榮漢"}, "660": {"s": "Map 北門", "b": "黃榮漢"}, "661": {"s": "Map 北門", "b": "黃榮漢"}, "662": {"s": "尤卡一心", "b": "黃榮漢"}, "663": {"s": "尤卡一心", "b": "黃榮漢"}, "664": {"s": "尤卡一心", "b": "黃榮漢"}, "665": {"s": "尤卡一心", "b": "黃榮漢"}, "666": {"s": "尤卡一心", "b": "黃榮漢"}, "667": {"s": "尤卡一心", "b": "黃榮漢"}, "668": {"s": "尤卡一心", "b": "黃榮漢"}, "669": {"s": "尤卡一心", "b": "黃榮漢"}, "670": {"s": "尤卡一心", "b": "黃榮漢"}, "671": {"s": "尤卡一心", "b": "黃榮漢"}, "672": {"s": "尤卡一心", "b": "黃榮漢"}, "673": {"s": "尤卡一心", "b": "黃榮漢"}, "674": {"s": "尤卡一心", "b": "黃榮漢"}, "675": {"s": "尤卡一心", "b": "黃榮漢"}, "676": {"s": "尤卡一心", "b": "黃榮漢"}, "677": {"s": "甩甩髮藝", "b": "吳上文"}, "789": {"s": "有造型旗艦", "b": "黃榮漢"}, "790": {"s": "有造型旗艦", "b": "黃榮漢"}, "791": {"s": "有造型旗艦", "b": "黃榮漢"}, "792": {"s": "有造型旗艦", "b": "黃榮漢"}, "793": {"s": "有造型旗艦", "b": "黃榮漢"}, "794": {"s": "有造型旗艦", "b": "黃榮漢"}, "795": {"s": "有造型旗艦", "b": "黃榮漢"}, "796": {"s": "raw府前", "b": "黃榮漢"}, "797": {"s": "raw府前", "b": "黃榮漢"}, "798": {"s": "raw府前", "b": "黃榮漢"}, "799": {"s": "raw府前", "b": "黃榮漢"}, "800": {"s": "raw府前", "b": "黃榮漢"}, "801": {"s": "尤卡一心", "b": "黃榮漢"}, "802": {"s": "尤卡一心", "b": "黃榮漢"}, "803": {"s": "尤卡一心", "b": "黃榮漢"}, "804": {"s": "尤卡一心", "b": "黃榮漢"}, "805": {"s": "髮廊故事", "b": "潘篤志"}, "806": {"s": "髮廊故事", "b": "潘篤志"}, "807": {"s": "髮廊故事", "b": "潘篤志"}, "808": {"s": "髮廊故事", "b": "潘篤志"}, "809": {"s": "髮廊故事", "b": "潘篤志"}, "810": {"s": "艾蒂爾質髮沙龍", "b": "潘篤志"}, "811": {"s": "陳詠升", "b": "陳宜楨"}, "812": {"s": "陳詠升", "b": "陳宜楨"}, "813": {"s": "鉑鬲", "b": "陳宜楨"}, "814": {"s": "EMILY", "b": "陳宜楨"}, "815": {"s": "WM髮攝", "b": "陳宜楨"}, "816": {"s": "肆陸", "b": "曾子倚"}, "817": {"s": "Meu", "b": "曾子倚"}, "818": {"s": "Meu", "b": "曾子倚"}, "819": {"s": "MINA HAIR", "b": "簡志銘"}, "820": {"s": "COCO髮舍", "b": "簡志銘"}}};
+const REGIONS=Object.keys(ROSTER);
+const KEY=r=>"checkin_"+r;
+let region=localStorage.getItem("lastRegion")||REGIONS[0];
+if(!REGIONS.includes(region))region=REGIONS[0];
 
-setInterval(() => {
-  const el = document.getElementById('clock');
-  if (el) el.textContent = new Date().toLocaleTimeString('zh-TW');
-}, 1000);
+const selEl=document.getElementById("region");
+REGIONS.forEach(r=>{const o=document.createElement("option");o.value=r;o.textContent=r+"（"+Object.keys(ROSTER[r]).length+" 人）";selEl.appendChild(o);});
+selEl.value=region;
+selEl.onchange=()=>{region=selEl.value;localStorage.setItem("lastRegion",region);document.getElementById("result").textContent="";document.getElementById("mresult").textContent="";render();};
 
-renderAll();
-setTimeout(() => document.getElementById('ticket-input').focus(), 200);
+function load(){try{return JSON.parse(localStorage.getItem(KEY(region)))||{}}catch(e){return{}}}
+function save(o){localStorage.setItem(KEY(region),JSON.stringify(o))}
 
-function switchTab(i) {
-  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
-  document.querySelectorAll('.tab-content').forEach((t,j) => t.classList.toggle('active', i===j));
-  if (i===0) setTimeout(() => document.getElementById('ticket-input').focus(), 100);
-  renderAll();
+function showTab(t){
+  document.getElementById("viewCheck").classList.toggle("hidden",t!=="check");
+  document.getElementById("viewStat").classList.toggle("hidden",t!=="stat");
+  document.getElementById("tabCheck").classList.toggle("on",t==="check");
+  document.getElementById("tabStat").classList.toggle("on",t==="stat");
+  if(t==="stat")renderStat();
+}
+function toggleAdd(){
+  const b=document.getElementById("addBody");const on=b.classList.toggle("hidden");
+  document.getElementById("addArw").textContent=on?"展開 ▾":"收合 ▴";
+  if(!on)document.getElementById("mStore").focus();
 }
 
-function doCheckin() {
-  const raw    = document.getElementById('ticket-input').value.trim().replace(/\D/g,'');
-  if (!raw) { showToast('請輸入票券序號'); return; }
-  const ticket = raw.padStart(3,'0');
-  const num    = parseInt(raw);
-
-  const dup = checkins.find(c => c.ticket === ticket);
-  if (dup) {
-    showResult('duplicate', ticket, dup.salon, dup.rep, `已於 ${dup.time} 報到`);
-    showToast(`⚠ ${ticket} 已報到過！`);
-    try { navigator.vibrate([80,50,80]); } catch(e){}
-    clearInput(); return;
+function doCheck(){
+  const inp=document.getElementById("serial");
+  const no=(inp.value||"").trim();
+  const res=document.getElementById("result");
+  if(!no){res.innerHTML='<span class="err">請輸入票號</span>';return;}
+  const rec=ROSTER[region][no];
+  if(!rec){res.innerHTML='<span class="err">✗ 查無此票號（'+no+'）— 不在'+region+'名單</span>';inp.value="";inp.focus();return;}
+  const done=load();
+  if(done[no]){
+    res.innerHTML='<span class="warn">⚠ 票號 '+no+' 已報到過</span><br><span class="r-store">'+rec.s+'</span><br><span class="r-biz">'+(rec.b||"")+' ・ '+fmt(done[no].t)+'</span>';
+    inp.value="";inp.focus();return;
   }
-
-  const match = lookupTicket(num);
-  const salon = match ? match.salon : '未知沙龍';
-  const rep   = match ? (match.rep||'') : '';
-  const time  = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-
-  checkins.push({ id: Date.now().toString(), ticket, salon, rep, time });
-  save('checkins', checkins);
-
-  showResult(match ? 'found' : 'not-mapped', ticket, salon, rep);
-  showToast(match ? `✔ ${ticket} — ${salon}` : `⚠ ${ticket} 無對應沙龍，已記錄`);
-  try { navigator.vibrate(80); } catch(e){}
-  renderAll();
-  clearInput();
+  done[no]={t:Date.now(),s:rec.s,b:rec.b};
+  save(done);
+  res.innerHTML='<span class="ok">✓ 報到成功</span><br><span class="r-store">'+rec.s+'</span><br><span class="r-biz">'+(rec.b||"")+'　票號 '+no+'</span>';
+  inp.value="";inp.focus();
+  render();
 }
+document.getElementById("serial").addEventListener("keydown",e=>{if(e.key==="Enter")doCheck();});
 
-function clearInput() {
-  const el = document.getElementById('ticket-input');
-  el.value = ''; el.focus();
-}
-
-function showResult(state, ticket, salon, rep, note='') {
-  const box = document.getElementById('result-box');
-  const badges = {
-    found:       '<span class="result-badge badge-ok">✔ 報到成功</span>',
-    'not-mapped':'<span class="result-badge badge-warn">⚠ 無對應沙龍</span>',
-    duplicate:   '<span class="result-badge badge-err">✕ 重複入場</span>',
-  };
-  box.className = 'result-box ' + state;
-  box.innerHTML = `
-    ${badges[state]||''}
-    <div class="result-ticket">${ticket}</div>
-    <div class="result-salon">${salon}</div>
-    ${rep  ? `<div class="result-meta">業務：${rep}</div>` : ''}
-    ${note ? `<div class="result-meta">${note}</div>` : ''}`;
-}
-
-function lookupTicket(n) {
-  const m = ranges.filter(r => n>=r.from && n<=r.to);
-  if (!m.length) return null;
-  return m.sort((a,b) => (a.to-a.from)-(b.to-b.from))[0];
-}
-
-function addRange() {
-  const from  = parseInt(document.getElementById('r-from').value);
-  const to    = parseInt(document.getElementById('r-to').value);
-  const salon = document.getElementById('r-salon').value.trim();
-  const rep   = document.getElementById('r-rep').value.trim();
-  if (!salon)                          { showToast('請輸入沙龍名稱'); return; }
-  if (isNaN(from)||isNaN(to)||from>to) { showToast('號碼範圍有誤'); return; }
-  ranges.push({ from, to, salon, rep });
-  save('ranges', ranges);
-  renderRangeList();
-  ['r-from','r-to','r-salon','r-rep'].forEach(id => document.getElementById(id).value='');
-  showToast(`已新增：${pad(from)}–${pad(to)} → ${salon}`);
-}
-
-function removeRange(i) {
-  if (!confirm('確定刪除？')) return;
-  ranges.splice(i,1); save('ranges',ranges); renderRangeList();
-}
-
-function clearRanges() {
-  if (!ranges.length||!confirm('確定清除所有號碼段？')) return;
-  ranges=[]; save('ranges',ranges); renderRangeList();
-}
-
-function deleteCheckin(id) {
-  checkins=checkins.filter(c=>c.id!==id);
-  save('checkins',checkins); renderAll();
-}
-
-function clearCheckins() {
-  if (!checkins.length||!confirm(`確定清除全部 ${checkins.length} 筆記錄？`)) return;
-  checkins=[]; save('checkins',checkins); renderAll(); showToast('已清除');
-}
-
-function renderAll() {
-  document.getElementById('s-total').textContent  = checkins.length;
-  document.getElementById('s-salons').textContent = new Set(checkins.map(c=>c.salon)).size;
-  document.getElementById('s-left').textContent   = Math.max(0, TOTAL-checkins.length);
-  renderRecent(); renderStats(); renderLog(); renderRangeList();
-}
-
-function renderRecent() {
-  const el = document.getElementById('recent-list');
-  const last = [...checkins].reverse().slice(0,6);
-  if (!last.length) { el.innerHTML='<div style="color:#ccc;text-align:center;padding:12px;font-size:13px;">尚無記錄</div>'; return; }
-  el.innerHTML = last.map(c =>
-    `<div class="recent-row">
-      <span class="recent-ticket">${c.ticket}</span>
-      <span class="recent-salon">${c.salon}</span>
-      <span class="recent-time">${c.time}</span>
-    </div>`).join('');
-}
-
-function renderStats() {
-  const grid = document.getElementById('stat-grid');
-  const totals = {};
-  checkins.forEach(c => { totals[c.salon]=(totals[c.salon]||0)+1; });
-  const entries = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
-  if (!entries.length) {
-    grid.innerHTML='<div style="color:#aaa;text-align:center;padding:20px;font-size:13px;grid-column:1/-1;">尚無報到記錄</div>';
-    return;
+function addWalkin(){
+  const store=(document.getElementById("mStore").value||"").trim();
+  const biz=(document.getElementById("mBiz").value||"").trim();
+  const no=(document.getElementById("mNo").value||"").trim();
+  const res=document.getElementById("mresult");
+  if(!store){res.innerHTML='<span class="err">請填店家／姓名</span>';return;}
+  const done=load();
+  if(no){
+    if(ROSTER[region][no]){res.innerHTML='<span class="err">票號 '+no+' 已在名單中，請用上方報到</span>';return;}
+    if(done[no]){res.innerHTML='<span class="warn">票號 '+no+' 已報到過</span>';return;}
+    done[no]={t:Date.now(),s:store,b:biz,w:true};
+  }else{
+    const key="W"+Date.now();
+    done[key]={t:Date.now(),s:store,b:biz,w:true,no:"臨時"};
   }
-  grid.innerHTML = entries.map(([name,cnt])=>
-    `<div class="stat-chip"><div class="sname" title="${name}">${name}</div><div class="snum">${cnt}</div><div class="sunit">人次</div></div>`
-  ).join('');
+  save(done);
+  res.innerHTML='<span class="ok">✓ 已新增並報到：'+store+'</span>';
+  document.getElementById("mStore").value="";document.getElementById("mBiz").value="";document.getElementById("mNo").value="";
+  document.getElementById("mStore").focus();
+  render();
 }
 
-function renderLog() {
-  const tbody = document.getElementById('log-body');
-  if (!checkins.length) {
-    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px;">尚無記錄</td></tr>';
-    return;
-  }
-  tbody.innerHTML = [...checkins].reverse().map((c,i)=>
-    `<tr>
-      <td style="color:#aaa">${checkins.length-i}</td>
-      <td style="color:#666;white-space:nowrap">${c.time}</td>
-      <td style="font-family:monospace;font-weight:700">${c.ticket}</td>
-      <td><strong>${c.salon}</strong></td>
-      <td style="color:#888">${c.rep||'—'}</td>
-      <td><button onclick="deleteCheckin('${c.id}')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;">✕</button></td>
-    </tr>`).join('');
+function fmt(t){const d=new Date(t);const p=n=>String(n).padStart(2,"0");return p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());}
+function fmtFull(t){const d=new Date(t);const p=n=>String(n).padStart(2,"0");return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());}
+function entries(){const done=load();return Object.entries(done).map(([k,v])=>({key:k,no:v.no||k,...v})).sort((a,b)=>b.t-a.t);}
+
+function render(){
+  const total=Object.keys(ROSTER[region]).length;
+  const arr=entries();
+  const rosterDone=arr.filter(r=>!r.w).length;
+  const walk=arr.filter(r=>r.w).length;
+  document.getElementById("sTotal").textContent=total;
+  document.getElementById("sDone").textContent=rosterDone+walk;
+  document.getElementById("sMiss").textContent=total-rosterDone;
+  document.getElementById("subStat").innerHTML=walk?('其中名單報到 '+rosterDone+' 位，臨時新增 <b>'+walk+'</b> 位'):('名單報到 '+rosterDone+' 位');
+  const rc=document.getElementById("recent");
+  if(!arr.length){rc.innerHTML='<div class="muted">尚無記錄</div>';return;}
+  let h='<table><tr><th>時間</th><th>票號</th><th>店家</th><th></th></tr>';
+  arr.slice(0,12).forEach(r=>{h+='<tr><td>'+fmt(r.t)+'</td><td>'+r.no+(r.w?'<span class="tag">臨時</span>':'')+'</td><td>'+r.s+'</td><td><span class="undo" onclick="undo(\''+r.key+'\')">取消</span></td></tr>';});
+  h+='</table>';rc.innerHTML=h;
+}
+function undo(key){const done=load();if(done[key]){delete done[key];save(done);document.getElementById("result").innerHTML='<span class="warn">已取消 '+(done[key]?'':'')+'一筆報到</span>';render();}}
+
+function renderStat(){
+  const arr=entries();
+  const bs={};arr.forEach(r=>{const k=r.s+(r.w?' ⟨臨時⟩':'');bs[k]=(bs[k]||0)+1});
+  const bsEl=document.getElementById("byStore");
+  const keys=Object.keys(bs).sort((a,b)=>bs[b]-bs[a]);
+  if(!keys.length){bsEl.innerHTML='<div class="muted">尚無報到記錄</div>';}
+  else{let h='<table><tr><th>店家</th><th>到場</th></tr>';keys.forEach(k=>{h+='<tr><td>'+k+'</td><td>'+bs[k]+'</td></tr>';});h+='</table>';bsEl.innerHTML=h;}
+  const lg=document.getElementById("log");
+  if(!arr.length){lg.innerHTML='<div class="muted">尚無記錄</div>';}
+  else{let h='<table><tr><th>#</th><th>時間</th><th>票號</th><th>店家</th><th>業務</th></tr>';
+    arr.forEach((r,i)=>{h+='<tr><td>'+(arr.length-i)+'</td><td>'+fmtFull(r.t)+'</td><td>'+r.no+(r.w?'<span class="tag">臨時</span>':'')+'</td><td>'+r.s+'</td><td>'+(r.b||"")+'</td></tr>';});
+    h+='</table>';lg.innerHTML=h;}
 }
 
-function renderRangeList() {
-  const el = document.getElementById('range-list');
-  if (!ranges.length) {
-    el.innerHTML='<div style="color:#aaa;text-align:center;padding:20px;font-size:13px;">尚未設定任何號碼段</div>';
-    return;
-  }
-  el.innerHTML = ranges.map((r,i)=>
-    `<div class="range-entry">
-      <span class="range-nums">${pad(r.from)}–${pad(r.to)}</span>
-      <span class="range-salon">${r.salon}</span>
-      <span class="range-rep">${r.rep||''}</span>
-      <button class="btn btn-danger btn-sm" onclick="removeRange(${i})">刪除</button>
-    </div>`).join('');
+function exportCSV(){
+  const arr=entries().sort((a,b)=>a.t-b.t);
+  let csv="﻿區域,票號,店家,業務,類型,報到時間\n";
+  arr.forEach(r=>{csv+=[region,r.no,'"'+(r.s||"")+'"','"'+(r.b||"")+'"',(r.w?"臨時":"名單"),fmtFull(r.t)].join(",")+"\n";});
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="報到記錄_"+region+".csv";a.click();
 }
+function clearRegion(){if(confirm("確定清除「"+region+"」全部報到記錄（含臨時新增）？此動作無法復原。")){localStorage.removeItem(KEY(region));render();renderStat();document.getElementById("result").textContent="";}}
 
-function exportCSV() {
-  if (!checkins.length) { showToast('尚無記錄可匯出'); return; }
-  const totals={};
-  checkins.forEach(c=>{totals[c.salon]=(totals[c.salon]||0)+1;});
-  let csv='﻿=== 各沙龍到場人次 ===\r\n沙龍名稱,到場人次\r\n';
-  Object.entries(totals).sort((a,b)=>b[1]-a[1]).forEach(([n,c])=>{csv+=`"${n}",${c}\r\n`;});
-  csv+=`合計,${checkins.length}\r\n\r\n=== 詳細報到記錄 ===\r\n序號,時間,票券序號,沙龍名稱,業務姓名\r\n`;
-  checkins.forEach((c,i)=>{csv+=`${i+1},"${c.time}","${c.ticket}","${c.salon}","${c.rep||''}"\r\n`;});
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download=`報到記錄_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'')}.csv`;
-  a.click(); URL.revokeObjectURL(url); showToast('CSV 已下載');
-}
-
-function pad(n) { return String(n).padStart(3,'0'); }
-function save(k,v) { try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
-
-let toastTimer;
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
-}
+render();
 </script>
 </body>
 </html>

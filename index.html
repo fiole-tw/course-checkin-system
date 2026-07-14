@@ -60,6 +60,7 @@
 <div class="wrap">
   <div class="tabs">
     <button id="tabCheck" class="on" onclick="showTab('check')">✅ 報到</button>
+    <button id="tabList" onclick="showTab('list')">📋 名單</button>
     <button id="tabStat" onclick="showTab('stat')">📊 統計</button>
   </div>
 
@@ -98,6 +99,17 @@
     </div>
   </div>
 
+  <div id="viewList" class="hidden">
+    <div class="card">
+      <input class="minput" id="listSearch" autocomplete="off" placeholder="🔍 搜尋票號／店家／業務" oninput="renderList()" style="margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#3a3a3c">
+        <input type="checkbox" id="onlyMiss" onchange="renderList()" style="width:18px;height:18px"> 只看未到
+      </label>
+      <div id="listCount" class="substat" style="margin-top:10px;margin-bottom:0"></div>
+      <div id="listBody" style="margin-top:10px"></div>
+    </div>
+  </div>
+
   <div id="viewStat" class="hidden">
     <div class="row-btn">
       <button onclick="exportCSV()">↓ 匯出 CSV</button>
@@ -131,10 +143,13 @@ function save(o){localStorage.setItem(KEY(region),JSON.stringify(o))}
 
 function showTab(t){
   document.getElementById("viewCheck").classList.toggle("hidden",t!=="check");
+  document.getElementById("viewList").classList.toggle("hidden",t!=="list");
   document.getElementById("viewStat").classList.toggle("hidden",t!=="stat");
   document.getElementById("tabCheck").classList.toggle("on",t==="check");
+  document.getElementById("tabList").classList.toggle("on",t==="list");
   document.getElementById("tabStat").classList.toggle("on",t==="stat");
   if(t==="stat")renderStat();
+  if(t==="list")renderList();
 }
 function toggleAdd(){
   const b=document.getElementById("addBody");const on=b.classList.toggle("hidden");
@@ -202,8 +217,27 @@ function render(){
   let h='<table><tr><th>時間</th><th>票號</th><th>店家</th><th></th></tr>';
   arr.slice(0,12).forEach(r=>{h+='<tr><td>'+fmt(r.t)+'</td><td>'+r.no+(r.w?'<span class="tag">臨時</span>':'')+'</td><td>'+r.s+'</td><td><span class="undo" onclick="undo(\''+r.key+'\')">取消</span></td></tr>';});
   h+='</table>';rc.innerHTML=h;
+  if(!document.getElementById("viewList").classList.contains("hidden"))renderList();
 }
 function undo(key){const done=load();if(done[key]){delete done[key];save(done);document.getElementById("result").innerHTML='<span class="warn">已取消 '+(done[key]?'':'')+'一筆報到</span>';render();}}
+
+function renderList(){
+  const done=load();
+  const q=(document.getElementById("listSearch").value||"").trim().toLowerCase();
+  const onlyMiss=document.getElementById("onlyMiss").checked;
+  const entries=Object.entries(ROSTER[region]).map(([no,r])=>({no,s:r.s,b:r.b,in:!!done[no]}));
+  entries.sort((a,b)=>(parseInt(a.no)||0)-(parseInt(b.no)||0));
+  const doneN=entries.filter(e=>e.in).length;
+  let rows=entries;
+  if(onlyMiss)rows=rows.filter(e=>!e.in);
+  if(q)rows=rows.filter(e=>(e.no+" "+(e.s||"")+" "+(e.b||"")).toLowerCase().includes(q));
+  document.getElementById("listCount").innerHTML="名單共 "+entries.length+" 位，已到 <b style='color:#34c759'>"+doneN+"</b>，未到 <b style='color:#ff9500'>"+(entries.length-doneN)+"</b>";
+  const el=document.getElementById("listBody");
+  if(!rows.length){el.innerHTML='<div class="muted">查無符合的名單</div>';return;}
+  let h='<table><tr><th>票號</th><th>店家</th><th>業務</th><th>狀態</th></tr>';
+  rows.forEach(e=>{h+='<tr><td>'+e.no+'</td><td>'+e.s+'</td><td>'+(e.b||"")+'</td><td>'+(e.in?'<span style="color:#34c759;font-weight:600">✓ 到</span>':'<span style="color:#c7c7cc">未到</span>')+'</td></tr>';});
+  h+='</table>';el.innerHTML=h;
+}
 
 function renderStat(){
   const arr=entries();
